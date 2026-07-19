@@ -41,7 +41,9 @@ O instalador:
    caso ainda não exista.
 2. Detecta a GPU (Intel/AMD/NVIDIA) via `lspci` e instala os drivers que
    estiverem faltando — cobre o caso de a ISO do Arch ter sido instalada
-   de forma mínima sem os pacotes gráficos.
+   de forma mínima sem os pacotes gráficos. Também detecta kernels
+   não-padrão (`zen`, `lts`, `hardened`) e troca automaticamente pra
+   variante `-dkms` do driver NVIDIA quando necessário.
 3. Instala Hyprland, XWayland, portais, áudio (pipewire), Bluetooth,
    fontes Nerd Font, SDDM, hyprpicker (color picker) e KDE Connect.
 4. Instala thumbnailers do Dolphin (`kimageformats`, `kdegraphics-thumbnailers`,
@@ -53,11 +55,37 @@ O instalador:
    7z etc — sem travar.
 7. Instala via AUR: walker, matugen, tema Kvantum Material You, tema SDDM,
    fastfetch.
-8. Copia as configs pra `~/.config/`.
-9. Configura **zram** (swap comprimido em RAM, zstd, sem tocar disco) e
-   **gamemode** (daemon de performance pra jogos) automaticamente.
-10. Gera a paleta Material You inicial a partir do wallpaper padrão.
-11. Habilita o SDDM como display manager.
+8. Copia as configs pra `~/.config/` — cada cópia é condicional (`if [ -f ... ]`);
+   se algum arquivo estiver faltando no repo, o instalador **avisa e continua**,
+   nunca aborta a instalação por causa disso.
+9. Cria as pastas padrão em `~/` (Download, Imagens, Documentos, Vídeos, Música,
+   Área de trabalho, Público) via `xdg-user-dirs-update`.
+10. Corrige o menu **"Abrir com"** do Dolphin, que fica em branco em instalações
+    Hyprland sem o Plasma completo: instala `archlinux-xdg-menu`, cria o link
+    simbólico de `applications.menu` e reconstrói o banco com `kbuildsycoca6`.
+11. Configura **zram** (swap comprimido em RAM, zstd, sem tocar disco) e
+    **gamemode** (daemon de performance pra jogos) automaticamente.
+12. Gera a paleta Material You inicial a partir do wallpaper padrão.
+13. Habilita o SDDM como display manager.
+
+## Changelog
+
+**v0.2** — correções feitas após a primeira instalação limpa (ver histórico
+completo de bugs no commit correspondente):
+- Removido `lib32-gamemode` (pacote inexistente) do installer e do
+  `setup-gamemode.sh`.
+- Trocado `paru` por `yay` como AUR helper.
+- `binds.lua` e `windowrules.lua` reescritos do zero pra API Lua atual do
+  Hyprland (`hl.dsp.*`, `hl.window_rule({ match = {...} })`, `hl.bind` com
+  string concatenada, autostart via `hl.on("hyprland.start", ...)`).
+- `waybar/colors.css` (fallback) agora vai versionado no repo — antes o
+  `style.css` dava `@import` num arquivo que só existia depois do matugen
+  rodar, e a waybar não subia.
+- Corrigido o menu "Abrir com" em branco no Dolphin (banco XDG ausente em
+  instalação minimalista sem Plasma).
+- Instalador agora cria as pastas padrão do usuário (Download, Imagens etc).
+- Todas as cópias de arquivo no installer viraram condicionais — arquivo
+  faltando gera aviso, não aborta a instalação.
 
 Depois: reinicie e selecione a sessão **Hyprland** na tela de login.
 

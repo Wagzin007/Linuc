@@ -1,20 +1,31 @@
-# Linuc dotfiles — walker (launcher leve, nativo Wayland, GTK4 layer-shell)
-# repo: https://github.com/abenz1267/walker
+# ~/.config/walker/config.toml
+# Linuc dotfiles — walker v2 (schema real: github.com/abenz1267/walker/blob/master/resources/config.toml)
 
+theme = "linuc"
+as_window = false                # roda como layer-shell (não janela normal) — correto pro Hyprland
+single_click_activation = true
 close_when_open = true
-disable_click_to_close = false
+click_to_close = true
+selection_wrap = true
+global_argument_delimiter = "#"
+exact_search_prefix = "'"
+ext_background_effect_blur = true
 
-[list]
-max_entries = 8
+[placeholders.default]
+input = "Buscar apps, arquivos, cálculos..."
+list = "Nada encontrado"
 
-[search]
-placeholder = "Buscar apps, arquivos, cálculos..."
-
-[websearch]
+[[providers.prefixes]]
+provider = "websearch"
 prefix = "?"
 
-[calc]
+[[providers.prefixes]]
+provider = "calc"
 prefix = "="
 
-[app_launch_prefix]
-terminal = "kitty -e"
+[[providers.prefixes]]
+provider = "providerlist"
+prefix = "_"
+
+[keybinds]
+quick_activate = ["F1", "F2", "F3", "F4", "F5"]

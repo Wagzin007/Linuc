@@ -51,8 +51,20 @@ if echo "$GPU_INFO" | grep -qi amd; then
 fi
 if echo "$GPU_INFO" | grep -qi nvidia; then
   warn "GPU NVIDIA detectada. Hyprland não tem suporte oficial NVIDIA;"
-  warn "instalando nvidia-open + parâmetros necessários (pode exigir ajustes manuais)."
-  pkgs_gpu+=(nvidia-open nvidia-utils egl-wayland lib32-nvidia-utils)
+  warn "instalando driver + parâmetros necessários (pode exigir ajustes manuais)."
+
+  # Kernel != linux padrão (zen/lts/hardened) precisa da variante DKMS,
+  # já que os pacotes nvidia-open/nvidia normais são pré-compilados só pro kernel stock.
+  KREL="$(uname -r)"
+  if [[ "$KREL" == *-zen* || "$KREL" == *-lts* || "$KREL" == *-hardened* ]]; then
+    log "Kernel não-padrão detectado ($KREL) — usando nvidia-open-dkms."
+    HEADER_PKG="linux-zen-headers"
+    [[ "$KREL" == *-lts* ]] && HEADER_PKG="linux-lts-headers"
+    [[ "$KREL" == *-hardened* ]] && HEADER_PKG="linux-hardened-headers"
+    pkgs_gpu+=("$HEADER_PKG" nvidia-open-dkms nvidia-utils egl-wayland lib32-nvidia-utils)
+  else
+    pkgs_gpu+=(nvidia-open nvidia-utils egl-wayland lib32-nvidia-utils)
+  fi
 fi
 
 if [ "${#pkgs_gpu[@]}" -gt 0 ]; then
@@ -60,6 +72,45 @@ if [ "${#pkgs_gpu[@]}" -gt 0 ]; then
 else
   warn "Nenhuma GPU reconhecida automaticamente; pulando pacotes de driver."
 fi
+
+# --- 2b. Gera hypr/gpu.lua com as env vars corretas pra essa GPU/ambiente ---
+# É isso que resolve apps (kitty, a janela do SUPER+H) não abrindo por causa
+# de aceleração de hardware mal configurada — Hyprland/kitty precisam de EGL
+# funcional, e VMs ou drivers errados quebram isso silenciosamente.
+log "Gerando hypr/gpu.lua de acordo com a GPU/ambiente detectado..."
+VIRT="$(systemd-detect-virt 2>/dev/null || echo none)"
+GPU_LUA="$DOTS_DIR/hypr/gpu.lua"
+
+{
+  echo "-- ~/.config/hypr/gpu.lua"
+  echo "-- Gerado automaticamente pelo install.sh em $(date +%F)."
+  echo "-- GPU detectada: ${GPU_INFO:-nenhuma}  |  Virtualização: $VIRT"
+  echo
+
+  if [ "$VIRT" != "none" ] && [ -n "$VIRT" ]; then
+    warn "Rodando dentro de uma VM ($VIRT) — forçando renderização por software."
+    echo 'hl.env("WLR_RENDERER_ALLOW_SOFTWARE", "1")'
+    echo 'hl.env("LIBGL_ALWAYS_SOFTWARE", "1")'
+    echo 'hl.env("WLR_NO_HARDWARE_CURSORS", "1")'
+  elif echo "$GPU_INFO" | grep -qi nvidia; then
+    echo 'hl.env("WLR_NO_HARDWARE_CURSORS", "1")'
+    echo 'hl.env("__GLX_VENDOR_LIBRARY_NAME", "nvidia")'
+    echo 'hl.env("LIBVA_DRIVER_NAME", "nvidia")'
+    echo 'hl.env("GBM_BACKEND", "nvidia-drm")'
+    echo 'hl.env("__GL_GSYNC_ALLOWED", "0")'
+    echo 'hl.env("__GL_VRR_ALLOWED", "0")'
+  elif echo "$GPU_INFO" | grep -qi intel; then
+    echo 'hl.env("LIBVA_DRIVER_NAME", "iHD")'
+    echo 'hl.env("WLR_NO_HARDWARE_CURSORS", "0")'
+  elif echo "$GPU_INFO" | grep -qi amd; then
+    echo 'hl.env("LIBVA_DRIVER_NAME", "radeonsi")'
+    echo 'hl.env("WLR_NO_HARDWARE_CURSORS", "0")'
+  else
+    warn "GPU não identificada — usando fallback seguro (renderização por software)."
+    echo 'hl.env("WLR_RENDERER_ALLOW_SOFTWARE", "1")'
+    echo 'hl.env("LIBGL_ALWAYS_SOFTWARE", "1")'
+  fi
+} > "$GPU_LUA"
 
 # --- 3. Pacotes base do sistema (Hyprland + Wayland + XWayland compat) ---
 log "Instalando pacotes base (Hyprland, portais, áudio, Wayland/X11 compat)..."
@@ -71,12 +122,14 @@ sudo pacman -S --noconfirm --needed \
   polkit-kde-agent \
   networkmanager network-manager-applet \
   bluez bluez-utils blueman \
-  brightnessctl playerctl \
+  brightnessctl playerctl pavucontrol \
   grim slurp wl-clipboard cliphist hyprpicker \
+  hyprlock hypridle hyprpaper \
+  jq libnotify glib2 gsettings-desktop-schemas \
   kdeconnect \
   ttf-jetbrains-mono-nerd noto-fonts noto-fonts-emoji ttf-roboto \
   sddm \
-  zsh git base-devel kitty pciutils \
+  zsh git base-devel \
   unzip zip p7zip tar xz lrzip lzop cpio
 
 # --- 3b. Suporte a preview/thumbnails do Dolphin (fotos, vídeos, docs) ---
@@ -93,81 +146,97 @@ sudo pacman -S --noconfirm --needed \
   btop \
   waybar dunst \
   qt5ct qt6ct kvantum kvantum-qt5 \
+  materia-gtk-theme kvantum-theme-materia \
   gamemode \
   zram-generator \
-  gimp obs-studio kdenlive
+  gimp obs-studio kdenlive \
+  zoxide eza fzf bat ripgrep fd
 
-# --- 5. Pacotes AUR (launcher, matugen, temas Material You, unrar) ---
-log "Instalando pacotes AUR (walker, matugen, tema kvantum Material You, sddm theme, unrar)..."
+# --- 5. Pacotes AUR (launcher/elephant, matugen, tema SDDM) ---
+log "Instalando pacotes AUR (elephant + provedores do walker, matugen, tema SDDM, unrar)..."
 yay -S --noconfirm --needed \
-  walker-bin \
+  walker \
   matugen-bin \
-  kvantum-theme-materialyou-git \
   sddm-theme-sugar-candy-git \
   fastfetch \
   wlogout \
   zsh-autosuggestions zsh-syntax-highlighting \
-  unrar
+  unrar \
+  elephant elephant-desktopapplications elephant-calc elephant-files \
+  elephant-runner elephant-symbols elephant-websearch elephant-clipboard \
+  elephant-archlinuxpkgs elephant-unicode elephant-providerlist \
+  hyprshot
 
-# --- 6. Copiar dotfiles ---
+# --- 6. Copiar dotfiles (nunca aborta se algo faltar, só avisa) ---
 log "Copiando configs pra ~/.config..."
 mkdir -p "$CONFIG_DIR"
 for dir in hypr waybar kitty walker qt5ct kvantum matugen fastfetch; do
-  rm -rf "$CONFIG_DIR/$dir"
-  cp -r "$DOTS_DIR/$dir" "$CONFIG_DIR/$dir"
+  if [ -d "$DOTS_DIR/$dir" ]; then
+    rm -rf "$CONFIG_DIR/$dir"
+    cp -r "$DOTS_DIR/$dir" "$CONFIG_DIR/$dir"
+  else
+    warn "Pasta '$dir' não encontrada no repo, pulando."
+  fi
 done
 
-mkdir -p "$CONFIG_DIR/dolphin"
-cp "$DOTS_DIR/dolphin/dolphinrc" "$CONFIG_DIR/dolphin/dolphinrc"
+if [ -f "$DOTS_DIR/dolphin/dolphinrc" ]; then
+  mkdir -p "$CONFIG_DIR"
+  cp "$DOTS_DIR/dolphin/dolphinrc" "$CONFIG_DIR/dolphinrc"
+else
+  warn "dolphinrc não encontrado, pulando config do Dolphin."
+fi
 
-cp "$DOTS_DIR/zsh/.zshrc" "$HOME/.zshrc"
+if [ -f "$DOTS_DIR/zsh/.zshrc" ]; then
+  cp "$DOTS_DIR/zsh/.zshrc" "$HOME/.zshrc"
+else
+  warn ".zshrc não encontrado em $DOTS_DIR/zsh/, pulando (zsh vai usar o padrão)."
+fi
 
 # wallpaper padrão
 mkdir -p "$CONFIG_DIR/hypr/wallpapers"
 if [ -f "$DOTS_DIR/wallpapers/default.jpg" ]; then
   cp "$DOTS_DIR/wallpapers/default.jpg" "$CONFIG_DIR/hypr/wallpapers/current.jpg"
-fi
-
-mkdir -p "$CONFIG_DIR/linuc-scripts"
-shopt -s nullglob
-for script in "$DOTS_DIR"/scripts/*.sh; do
-  chmod +x "$script"
-  cp "$script" "$CONFIG_DIR/linuc-scripts/"
-done
-shopt -u nullglob
-
-# --- 7. zram e gamemode ---
-log "Configurando zram..."
-if [ -f "$DOTS_DIR/scripts/setup-zram.sh" ]; then
-  bash "$DOTS_DIR/scripts/setup-zram.sh"
 else
-  warn "setup-zram.sh não encontrado; pulando."
+  warn "Wallpaper padrão não encontrado; defina um manualmente depois."
 fi
+
+if [ -d "$DOTS_DIR/scripts" ]; then
+  chmod +x "$DOTS_DIR/scripts/"*.sh 2>/dev/null || true
+  mkdir -p "$CONFIG_DIR/linuc-scripts"
+  cp "$DOTS_DIR/scripts/"*.sh "$CONFIG_DIR/linuc-scripts/" 2>/dev/null || true
+fi
+
+# --- 7. Pastas padrão do usuário (Download, Imagens, Documentos, etc) ---
+log "Criando pastas padrão em $HOME (Download, Imagens, Documentos, Vídeos, Música, Área de trabalho, Público)..."
+sudo pacman -S --noconfirm --needed xdg-user-dirs
+LANG=pt_BR.UTF-8 xdg-user-dirs-update 2>/dev/null || xdg-user-dirs-update
+mkdir -p "$HOME/Download" "$HOME/Imagens" "$HOME/Documentos" "$HOME/Vídeos" "$HOME/Música" "$HOME/Área de trabalho" "$HOME/Público"
+
+# --- 8. Corrige o menu "Abrir com" do Dolphin (banco XDG ausente em instalações minimalistas) ---
+log "Corrigindo banco XDG pro menu 'Abrir com' do Dolphin..."
+yay -S --noconfirm --needed archlinux-xdg-menu
+sudo mkdir -p /etc/xdg/menus
+if [ -f /etc/xdg/menus/arch-applications.menu ] && [ ! -e /etc/xdg/menus/applications.menu ]; then
+  sudo ln -sf /etc/xdg/menus/arch-applications.menu /etc/xdg/menus/applications.menu
+fi
+XDG_MENU_PREFIX=arch- kbuildsycoca6 --noincremental 2>/dev/null || \
+  warn "kbuildsycoca6 não encontrado agora; ele roda de novo no primeiro login do Dolphin."
+
+# --- 9. zram e gamemode ---
+log "Configurando zram..."
+[ -f "$DOTS_DIR/scripts/setup-zram.sh" ] && bash "$DOTS_DIR/scripts/setup-zram.sh" || warn "setup-zram.sh não encontrado, pulando."
 
 log "Configurando gamemode..."
-if [ -f "$DOTS_DIR/scripts/setup-gamemode.sh" ]; then
-  bash "$DOTS_DIR/scripts/setup-gamemode.sh"
-else
-  warn "setup-gamemode.sh não encontrado; pulando."
-fi
+[ -f "$DOTS_DIR/scripts/setup-gamemode.sh" ] && bash "$DOTS_DIR/scripts/setup-gamemode.sh" || warn "setup-gamemode.sh não encontrado, pulando."
 
-# --- 8. Gerar paleta Material You inicial ---
-if [ -f "$CONFIG_DIR/hypr/wallpapers/current.jpg" ]; then
+# --- 10. Gerar paleta Material You inicial ---
+if [ -f "$CONFIG_DIR/hypr/wallpapers/current.jpg" ] && [ -f "$DOTS_DIR/scripts/matugen-wallpaper.sh" ]; then
   log "Gerando paleta Material You a partir do wallpaper padrão..."
-
-  if [ -f "$DOTS_DIR/scripts/matugen-wallpaper.sh" ]; then
-    bash "$DOTS_DIR/scripts/matugen-wallpaper.sh" \
-      "$CONFIG_DIR/hypr/wallpapers/current.jpg" || \
-      warn "matugen falhou, rode manualmente depois com um wallpaper."
-  else
-    warn "matugen-wallpaper.sh não encontrado; pulando."
-  fi
-
-else
-  warn "Wallpaper padrão não encontrado; pulando geração da paleta."
+  bash "$DOTS_DIR/scripts/matugen-wallpaper.sh" "$CONFIG_DIR/hypr/wallpapers/current.jpg" || \
+    warn "matugen falhou, rode manualmente depois com um wallpaper."
 fi
 
-# --- 9. SDDM ---
+# --- 11. SDDM ---
 log "Habilitando SDDM..."
 sudo mkdir -p /etc/sddm.conf.d
 sudo tee /etc/sddm.conf.d/theme.conf > /dev/null <<'EOF'
@@ -176,7 +245,7 @@ Current=sugar-candy
 EOF
 sudo systemctl enable sddm.service
 
-# --- 10. Shell padrão ---
+# --- 12. Shell padrão ---
 if command -v zsh >/dev/null 2>&1; then
   chsh -s "$(command -v zsh)" "$USER" || warn "Não consegui trocar o shell padrão automaticamente; rode 'chsh -s $(command -v zsh)'."
 fi

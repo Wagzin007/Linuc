@@ -9,7 +9,7 @@
 
   "modules-left": ["hyprland/workspaces", "hyprland/window"],
   "modules-center": ["clock"],
-  "modules-right": ["tray", "pulseaudio", "network", "cpu", "memory", "battery", "custom/power"],
+  "modules-right": ["tray", "pulseaudio", "network", "custom/cpu", "custom/mem", "battery", "custom/power"],
 
   "hyprland/workspaces": {
     "format": "{icon}",
@@ -28,8 +28,10 @@
   },
 
   "clock": {
-    "format": "{:%H:%M  •  %d/%m}",
-    "tooltip-format": "<big>{:%Y %B}</big>\n<tt>{calendar}</tt>"
+    "format": "{:%H:%M}",
+    "format-alt": "{:%H:%M} | {:%A, %d de %B}",
+    "tooltip-format": "<big>{:%Y %B}</big>\n<tt>{calendar}</tt>",
+    "on-click": "mode"
   },
 
   "tray": { "icon-size": 16, "spacing": 10 },
@@ -48,8 +50,19 @@
     "on-click": "nm-connection-editor"
   },
 
-  "cpu": { "format": "󰻠 {usage}%", "interval": 3 },
-  "memory": { "format": "󰍛 {percentage}%", "interval": 5 },
+  "custom/cpu": {
+    "exec": "~/.config/linuc-scripts/waybar-cpu.sh",
+    "return-type": "json",
+    "interval": 3,
+    "tooltip": true
+  },
+
+  "custom/mem": {
+    "exec": "~/.config/linuc-scripts/waybar-mem.sh",
+    "return-type": "json",
+    "interval": 5,
+    "tooltip": true
+  },
 
   "battery": {
     "format": "{icon} {capacity}%",

@@ -15,7 +15,7 @@ window#waybar {
 }
 
 #workspaces, #window, #clock, #tray, #pulseaudio, #network,
-#cpu, #memory, #battery, #custom-power {
+#custom-cpu, #custom-mem, #battery, #custom-power {
   background-color: @surface;
   color: @on-surface;
   border-radius: 20px;
