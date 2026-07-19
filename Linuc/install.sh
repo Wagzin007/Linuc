@@ -150,7 +150,7 @@ sudo pacman -S --noconfirm --needed \
   papirus-icon-theme \
   flatpak \
   sddm \
-  zsh git base-devel \
+  zsh git base-devel nano \
   unzip zip p7zip tar xz lrzip lzop cpio
 
 # --- 3b. Suporte a preview/thumbnails do Dolphin (fotos, vídeos, docs) ---
@@ -280,10 +280,22 @@ fi
 
 # --- 11. SDDM (Material You também no login) ---
 log "Habilitando SDDM..."
+
+# O nome real da pasta instalada pelo pacote AUR pode variar entre forks
+# (ex: "Sugar-Candy" com maiúsculas, não "sugar-candy"). Detecta em vez de
+# chutar, e salva pro sync-sddm-theme.sh usar depois.
+SDDM_THEME_NAME="$(find /usr/share/sddm/themes -maxdepth 1 -iname '*sugar*candy*' -type d -printf '%f\n' 2>/dev/null | head -1)"
+if [ -z "$SDDM_THEME_NAME" ]; then
+  warn "Não achei a pasta do tema Sugar Candy instalada em /usr/share/sddm/themes."
+  warn "Confirma se 'yay -S sddm-theme-sugar-candy-git' rodou sem erro."
+  SDDM_THEME_NAME="Sugar-Candy"
+fi
+echo "$SDDM_THEME_NAME" > "$CONFIG_DIR/linuc-scripts/.sddm-theme-name"
+
 sudo mkdir -p /etc/sddm.conf.d
-sudo tee /etc/sddm.conf.d/theme.conf > /dev/null <<'EOF'
+sudo tee /etc/sddm.conf.d/theme.conf > /dev/null <<EOF
 [Theme]
-Current=sugar-candy
+Current=$SDDM_THEME_NAME
 EOF
 sudo systemctl enable sddm.service
 
@@ -297,7 +309,11 @@ fi
 
 # --- 12. Shell padrão ---
 if command -v zsh >/dev/null 2>&1; then
-  chsh -s "$(command -v zsh)" "$USER" || warn "Não consegui trocar o shell padrão automaticamente; rode 'chsh -s $(command -v zsh)'."
+  ZSH_PATH="$(command -v zsh)"
+  # chsh falha silenciosamente ("Shell não alterado") se o caminho não estiver
+  # listado em /etc/shells — garante isso antes de tentar trocar.
+  grep -qxF "$ZSH_PATH" /etc/shells 2>/dev/null || echo "$ZSH_PATH" | sudo tee -a /etc/shells > /dev/null
+  chsh -s "$ZSH_PATH" "$USER" || warn "Não consegui trocar o shell padrão automaticamente; rode 'chsh -s $ZSH_PATH'."
 fi
 
 log "Instalação concluída! Reinicie o sistema e selecione a sessão Hyprland no SDDM."

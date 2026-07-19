@@ -27,6 +27,7 @@ print_row "SUPER + Space"    "Abre o launcher de apps (Walker)"
 print_row "SUPER + T"        "Abre o btop num terminal"
 print_row "SUPER + H"        "Mostra esta janela de atalhos"
 print_row "SUPER + W"        "Escolhe/troca o wallpaper (com preview)"
+print_row "SUPER + C"        "Painel de controle da dotfile"
 print_row "SUPER + SHIFT+Q"  "Sai do Hyprland"
 echo
 

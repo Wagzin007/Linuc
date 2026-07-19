@@ -55,6 +55,15 @@ hl.window_rule({
   size = "900 640",
 })
 
+-- Painel de controle (SUPER+C)
+hl.window_rule({
+  name = "linuc-ctl-window",
+  match = { class = "^(linuc-ctl)$" },
+  float = true,
+  center = true,
+  size = "760 600",
+})
+
 -- Corrige bug conhecido de drag em janelas X11 sem classe/título (XWayland)
 hl.window_rule({
   name = "fix-xwayland-drags",

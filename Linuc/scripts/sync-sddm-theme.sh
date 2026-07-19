@@ -7,7 +7,15 @@ set -euo pipefail
 
 STAGED_THEME="$HOME/.cache/linuc/sddm-theme.conf.user"
 CURRENT_WALL="$HOME/.config/hypr/wallpapers/current.jpg"
-SDDM_THEME_DIR="/usr/share/sddm/themes/sugar-candy"
+NAME_FILE="$HOME/.config/linuc-scripts/.sddm-theme-name"
+
+if [ -f "$NAME_FILE" ]; then
+  SDDM_THEME_NAME="$(cat "$NAME_FILE")"
+else
+  SDDM_THEME_NAME="$(find /usr/share/sddm/themes -maxdepth 1 -iname '*sugar*candy*' -type d -printf '%f\n' 2>/dev/null | head -1)"
+  SDDM_THEME_NAME="${SDDM_THEME_NAME:-Sugar-Candy}"
+fi
+SDDM_THEME_DIR="/usr/share/sddm/themes/$SDDM_THEME_NAME"
 
 if [ ! -f "$STAGED_THEME" ]; then
   echo "Nenhuma paleta gerada ainda pelo matugen — usando as cores padrão da dotfile."
@@ -22,7 +30,7 @@ if [ ! -f "$STAGED_THEME" ]; then
 fi
 
 if [ ! -d "$SDDM_THEME_DIR" ]; then
-  echo "Tema sugar-candy não encontrado em $SDDM_THEME_DIR."
+  echo "Tema $SDDM_THEME_NAME não encontrado em $SDDM_THEME_DIR."
   echo "Instale com: yay -S sddm-theme-sugar-candy-git"
   exit 1
 fi
