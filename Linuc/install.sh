@@ -8,9 +8,9 @@ set -euo pipefail
 DOTS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CONFIG_DIR="$HOME/.config"
 
-log()  { echo -e "\033[1;36m[Linuc]\033[0m $1"; }
-warn() { echo -e "\033[1;33m[Linuc][atenção]\033[0m $1"; }
-err()  { echo -e "\033[1;31m[Linuc][erro]\033[0m $1"; exit 1; }
+log()  { echo -e "\033[1;36m[Linuc]\033[0m $1" >&2; }
+warn() { echo -e "\033[1;33m[Linuc][atenção]\033[0m $1" >&2; }
+err()  { echo -e "\033[1;31m[Linuc][erro]\033[0m $1" >&2; exit 1; }
 
 # --- 0. Garantir que é Arch Linux ---
 if ! grep -qi "arch" /etc/os-release 2>/dev/null; then

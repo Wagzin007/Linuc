@@ -42,7 +42,7 @@ hl.window_rule({
   name = "linuc-help-window",
   match = { class = "^(linuc-help)$" },
   float = true,
-  move = "center",
+  center = true,
   size = "620 560",
 })
 
