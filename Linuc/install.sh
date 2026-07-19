@@ -76,7 +76,7 @@ sudo pacman -S --noconfirm --needed \
   kdeconnect \
   ttf-jetbrains-mono-nerd noto-fonts noto-fonts-emoji ttf-roboto \
   sddm \
-  zsh git base-devel \
+  zsh git base-devel kitty pciutils \
   unzip zip p7zip tar xz lrzip lzop cpio
 
 # --- 3b. Suporte a preview/thumbnails do Dolphin (fotos, vídeos, docs) ---
@@ -118,7 +118,7 @@ for dir in hypr waybar kitty walker qt5ct kvantum matugen fastfetch; do
 done
 
 mkdir -p "$CONFIG_DIR/dolphin"
-cp "$DOTS_DIR/dolphin/dolphinrc" "$CONFIG_DIR/dolphinrc"
+cp "$DOTS_DIR/dolphin/dolphinrc" "$CONFIG_DIR/dolphin/dolphinrc"
 
 cp "$DOTS_DIR/zsh/.zshrc" "$HOME/.zshrc"
 
@@ -128,22 +128,37 @@ if [ -f "$DOTS_DIR/wallpapers/default.jpg" ]; then
   cp "$DOTS_DIR/wallpapers/default.jpg" "$CONFIG_DIR/hypr/wallpapers/current.jpg"
 fi
 
-chmod +x "$DOTS_DIR/scripts/"*.sh
 mkdir -p "$CONFIG_DIR/linuc-scripts"
-cp "$DOTS_DIR/scripts/"*.sh "$CONFIG_DIR/linuc-scripts/"
+shopt -s nullglob
+for script in "$DOTS_DIR"/scripts/*.sh; do
+  chmod +x "$script"
+  cp "$script" "$CONFIG_DIR/linuc-scripts/"
+done
+shopt -u nullglob
 
 # --- 7. zram e gamemode ---
 log "Configurando zram..."
-bash "$DOTS_DIR/scripts/setup-zram.sh"
+if [ -f "$DOTS_DIR/scripts/setup-zram.sh" ]; then
+  bash "$DOTS_DIR/scripts/setup-zram.sh"
+else
+  warn "setup-zram.sh não encontrado; pulando."
+fi
 
 log "Configurando gamemode..."
-bash "$DOTS_DIR/scripts/setup-gamemode.sh"
+if [ -f "$DOTS_DIR/scripts/setup-gamemode.sh" ]; then
+  bash "$DOTS_DIR/scripts/setup-gamemode.sh"
+else
+  warn "setup-gamemode.sh não encontrado; pulando."
+fi
 
 # --- 8. Gerar paleta Material You inicial ---
 if [ -f "$CONFIG_DIR/hypr/wallpapers/current.jpg" ]; then
   log "Gerando paleta Material You a partir do wallpaper padrão..."
-  bash "$DOTS_DIR/scripts/matugen-wallpaper.sh" "$CONFIG_DIR/hypr/wallpapers/current.jpg" || \
+  if [ -f "$DOTS_DIR/scripts/matugen-wallpaper.sh" ]; then
+    bash "$DOTS_DIR/scripts/matugen-wallpaper.sh" "$CONFIG_DIR/hypr/wallpapers/current.jpg" || \
     warn "matugen falhou, rode manualmente depois com um wallpaper."
+else
+    warn "matugen-wallpaper.sh não encontrado; pulando."
 fi
 
 # --- 9. SDDM ---
