@@ -196,7 +196,7 @@ yay -S --noconfirm --needed \
 # --- 6. Copiar dotfiles (nunca aborta se algo faltar, só avisa) ---
 log "Copiando configs pra ~/.config..."
 mkdir -p "$CONFIG_DIR"
-for dir in hypr waybar kitty walker qt5ct kvantum matugen fastfetch; do
+for dir in hypr waybar kitty walker qt5ct kvantum matugen fastfetch dunst; do
   if [ -d "$DOTS_DIR/$dir" ]; then
     rm -rf "$CONFIG_DIR/$dir"
     cp -r "$DOTS_DIR/$dir" "$CONFIG_DIR/$dir"
@@ -220,10 +220,12 @@ fi
 
 # wallpaper padrão
 mkdir -p "$CONFIG_DIR/hypr/wallpapers"
+mkdir -p "$HOME/Imagens/Wallpapers"
 if [ -f "$DOTS_DIR/wallpapers/default.jpg" ]; then
   cp "$DOTS_DIR/wallpapers/default.jpg" "$CONFIG_DIR/hypr/wallpapers/current.jpg"
+  cp "$DOTS_DIR/wallpapers/default.jpg" "$HOME/Imagens/Wallpapers/default.jpg"
 else
-  warn "Wallpaper padrão não encontrado; defina um manualmente depois."
+  warn "Wallpaper padrão não encontrado; coloque imagens em ~/Imagens/Wallpapers e use SUPER+W."
 fi
 
 if [ -d "$DOTS_DIR/scripts" ]; then

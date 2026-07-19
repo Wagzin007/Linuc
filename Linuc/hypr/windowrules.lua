@@ -46,6 +46,15 @@ hl.window_rule({
   size = "620 560",
 })
 
+-- Seletor de wallpaper (SUPER+W)
+hl.window_rule({
+  name = "linuc-wallpicker-window",
+  match = { class = "^(linuc-wallpicker)$" },
+  float = true,
+  center = true,
+  size = "900 640",
+})
+
 -- Corrige bug conhecido de drag em janelas X11 sem classe/título (XWayland)
 hl.window_rule({
   name = "fix-xwayland-drags",

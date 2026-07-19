@@ -15,4 +15,5 @@ matugen image "$DEST" --mode dark --type scheme-tonal-spot
 
 hyprctl reload
 pkill -SIGUSR2 waybar 2>/dev/null || true
+command -v dunstctl >/dev/null 2>&1 && dunstctl reload 2>/dev/null || true
 echo "Paleta Material You aplicada a partir de $WALL"

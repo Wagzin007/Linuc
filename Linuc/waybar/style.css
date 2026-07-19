@@ -1,50 +1,88 @@
-/* Linuc dotfiles — Waybar, estilo Material You (pill/floating).
-   As variáveis @primary / @surface / @on-surface são reescritas
-   automaticamente pelo matugen a partir do wallpaper. */
-
+/* Linuc dotfiles — Waybar, Material You (elevação/profundidade tipo M3) */
 @import url("colors.css"); /* gerado pelo matugen a partir do wallpaper */
 
 * {
   font-family: "Roboto Flex", "Noto Sans", sans-serif;
   font-size: 13px;
+  font-weight: 500;
   min-height: 0;
+  transition: all 0.15s ease-in-out;
 }
 
 window#waybar {
   background: transparent;
 }
 
+/* "Superfície" elevada M3: fundo translúcido + leve sombra */
 #workspaces, #window, #clock, #tray, #pulseaudio, #network,
 #custom-cpu, #custom-mem, #battery, #custom-power {
   background-color: @surface;
   color: @on-surface;
   border-radius: 20px;
   padding: 4px 14px;
-  margin: 2px 2px;
+  margin: 3px 2px;
+  border: 1px solid alpha(@outline, 0.35);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+}
+
+#workspaces {
+  padding: 4px 6px;
 }
 
 #workspaces button {
-  padding: 0 8px;
-  color: @outline;
-  border-radius: 16px;
+  padding: 0 9px;
+  margin: 0 1px;
+  color: alpha(@on-surface, 0.55);
+  border-radius: 14px;
 }
 
 #workspaces button.active {
   background-color: @primary;
   color: @on-primary;
+  padding: 0 14px;
 }
 
 #workspaces button:hover {
-  background-color: alpha(@primary, 0.25);
+  background-color: alpha(@primary, 0.22);
+  color: @on-surface;
+}
+
+#window {
+  color: alpha(@on-surface, 0.75);
+  font-weight: 400;
 }
 
 #clock {
-  font-weight: 600;
+  font-weight: 700;
+  color: @primary;
+}
+#clock:hover {
+  background-color: alpha(@primary, 0.12);
+}
+
+#tray { padding: 4px 10px; }
+#tray > .passive { opacity: 0.55; }
+
+#pulseaudio:hover, #network:hover, #custom-cpu:hover, #custom-mem:hover {
+  background-color: alpha(@primary, 0.12);
+  border-color: alpha(@primary, 0.5);
+}
+
+#battery.warning { color: #ffd54f; border-color: #ffd54f; }
+#battery.critical {
+  color: #ffb4ab;
+  border-color: #ffb4ab;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
 }
 
 #custom-power {
   color: #ffb4ab;
+  font-size: 15px;
 }
-
-#battery.warning { color: #ffd54f; }
-#battery.critical { color: #ffb4ab; }
+#custom-power:hover {
+  background-color: alpha(#ffb4ab, 0.18);
+}

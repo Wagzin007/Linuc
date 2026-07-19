@@ -8,6 +8,7 @@ hl.bind(mainMod .. " + B", hl.dsp.exec_cmd("firefox"))
 hl.bind(mainMod .. " + Space", hl.dsp.exec_cmd("walker"))
 hl.bind(mainMod .. " + T", hl.dsp.exec_cmd("~/.config/linuc-scripts/kitty-safe.sh -e btop"))
 hl.bind(mainMod .. " + H", hl.dsp.exec_cmd("~/.config/linuc-scripts/kitty-safe.sh --class linuc-help -e ~/.config/linuc-scripts/show-keybinds.sh"))
+hl.bind(mainMod .. " + W", hl.dsp.exec_cmd("~/.config/linuc-scripts/kitty-safe.sh --class linuc-wallpicker -e ~/.config/linuc-scripts/wallpaper-picker.sh"))
 hl.bind(mainMod .. " + SHIFT + Q", hl.dsp.exec_cmd("hyprctl dispatch 'hl.dsp.exit()'"))
 
 hl.bind(mainMod .. " + V", hl.dsp.window.float({ action = "toggle" }))

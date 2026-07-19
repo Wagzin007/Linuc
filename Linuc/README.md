@@ -95,7 +95,17 @@ Aperte `SUPER + H` a qualquer momento pra abrir uma janelinha flutuante com a
 lista completa de atalhos da dotfile e uma descrição curta de cada um
 (script em `scripts/show-keybinds.sh`, copiado pra `~/.config/linuc-scripts/`).
 
-## Trocar de wallpaper (e a paleta Material You junto)
+## Trocar de wallpaper
+
+**Do jeito fácil:** aperte `SUPER + W`. Abre um seletor com preview das imagens
+em tempo real (usando `fzf` + `kitty icat`) direto de `~/Imagens/Wallpapers/`.
+Navega com as setas, aperta Enter — aplica o wallpaper e já regenera a paleta
+Material You (Hyprland, waybar, kitty, GTK, **dunst** e **hyprlock**) na hora.
+
+Só jogar as imagens novas em `~/Imagens/Wallpapers/` que elas já aparecem no
+seletor, não precisa configurar nada.
+
+**Via terminal**, se preferir: (e a paleta Material You junto)
 
 ```bash
 ~/.config/linuc-scripts/matugen-wallpaper.sh /caminho/da/imagem.jpg
