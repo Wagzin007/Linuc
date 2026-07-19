@@ -49,19 +49,19 @@
     mouse_right_click = close_all
 
 [urgency_low]
-    background = "{{colors.surface.hex}}ee"
+    background = "{{colors.surface.hex}}"
     foreground = "{{colors.on_surface.hex}}"
     frame_color = "{{colors.outline.hex}}"
     timeout = 5
 
 [urgency_normal]
-    background = "{{colors.surface.hex}}ee"
+    background = "{{colors.surface.hex}}"
     foreground = "{{colors.on_surface.hex}}"
     frame_color = "{{colors.primary.hex}}"
     timeout = 8
 
 [urgency_critical]
-    background = "{{colors.surface.hex}}ee"
+    background = "{{colors.surface.hex}}"
     foreground = "{{colors.on_surface.hex}}"
     frame_color = "{{colors.error.hex}}"
     timeout = 0

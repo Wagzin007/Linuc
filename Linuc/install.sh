@@ -146,6 +146,9 @@ sudo pacman -S --noconfirm --needed \
   jq libnotify glib2 gsettings-desktop-schemas \
   kdeconnect \
   ttf-jetbrains-mono-nerd noto-fonts noto-fonts-emoji ttf-roboto \
+  ttf-dejavu ttf-liberation otf-font-awesome \
+  papirus-icon-theme \
+  flatpak \
   sddm \
   zsh git base-devel \
   unzip zip p7zip tar xz lrzip lzop cpio
@@ -155,6 +158,10 @@ log "Instalando thumbnailers pro Dolphin (preview de fotos/vídeos sem abrir)...
 sudo pacman -S --noconfirm --needed \
   kimageformats kdegraphics-thumbnailers ffmpegthumbs \
   qt6-imageformats kio-extras
+
+# --- 3c. Flathub (o Flatpak sozinho não vem com nenhum repositório configurado) ---
+log "Configurando o Flathub pro Flatpak..."
+flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
 
 # --- 4. Apps pré-instalados exigidos ---
 log "Instalando apps: Firefox, Dolphin, btop, GIMP, OBS, Kdenlive..."
@@ -216,6 +223,12 @@ if [ -f "$DOTS_DIR/zsh/.zshrc" ]; then
   cp "$DOTS_DIR/zsh/.zshrc" "$HOME/.zshrc"
 else
   warn ".zshrc não encontrado em $DOTS_DIR/zsh/, pulando (zsh vai usar o padrão)."
+fi
+
+if [ -f "$DOTS_DIR/zsh/.p10k.zsh" ]; then
+  cp "$DOTS_DIR/zsh/.p10k.zsh" "$HOME/.p10k.zsh"
+else
+  warn ".p10k.zsh não encontrado, o prompt vai usar o tema padrão do powerlevel10k."
 fi
 
 # wallpaper padrão

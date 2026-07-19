@@ -1,8 +1,9 @@
-/* Fallback (Material You padrão) — sobrescrito pelo matugen ao trocar de wallpaper.
-   Esse arquivo PRECISA existir no repo: sem ele o waybar falha ao carregar
-   o style.css (que dá @import nele) e a barra não aparece. */
+/* Fallback (Material You padrão) - sobrescrito pelo matugen ao trocar de wallpaper.
+   Cores sempre em #RRGGBB puro (6 digitos). Transparencia e feita com alpha()
+   direto no style.css, nunca colando sufixo de opacidade na cor aqui -
+   foi exatamente isso que quebrou o parser do GTK CSS antes (hex com 9 digitos). */
 @define-color primary     #a8c7fa;
 @define-color on-primary  #00315c;
-@define-color surface     #1a1c13;
+@define-color surface     #1a1c1e;
 @define-color on-surface  #e2e2e6;
 @define-color outline     #43474e;

@@ -1,19 +1,18 @@
-/* Linuc dotfiles — Waybar, Material You (elevação/profundidade tipo M3) */
-@import url("colors.css"); /* gerado pelo matugen a partir do wallpaper */
+/* Linuc dotfiles - Waybar, Material You */
+/* GTK CSS != CSS de navegador: nada de @keyframes, animation ou box-shadow moderno aqui. */
+@import url("colors.css");
 
 * {
   font-family: "Roboto Flex", "Noto Sans", sans-serif;
   font-size: 13px;
   font-weight: 500;
   min-height: 0;
-  transition: all 0.15s ease-in-out;
 }
 
 window#waybar {
   background: transparent;
 }
 
-/* "Superfície" elevada M3: fundo translúcido + leve sombra */
 #workspaces, #window, #clock, #tray, #pulseaudio, #network,
 #custom-cpu, #custom-mem, #battery, #custom-power {
   background-color: @surface;
@@ -22,7 +21,6 @@ window#waybar {
   padding: 4px 14px;
   margin: 3px 2px;
   border: 1px solid alpha(@outline, 0.35);
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
 }
 
 #workspaces {
@@ -68,13 +66,16 @@ window#waybar {
   border-color: alpha(@primary, 0.5);
 }
 
-#battery.warning { color: #ffd54f; border-color: #ffd54f; }
+#battery.warning {
+  color: #ffd54f;
+  border-color: #ffd54f;
+}
+
 #battery.critical {
   color: #ffb4ab;
   border-color: #ffb4ab;
-  animation: pulse 1.5s ease-in-out infinite;
+  background-color: alpha(#ffb4ab, 0.15);
 }
-
 
 #custom-power {
   color: #ffb4ab;

@@ -1,6 +1,7 @@
-/* auto-gerado pelo matugen — importado em waybar/style.css */
+/* auto-gerado pelo matugen - importado em waybar/style.css */
+/* Sempre #RRGGBB puro (sem sufixo de alpha colado aqui, ver colors.css). */
 @define-color primary     {{colors.primary.hex}};
 @define-color on-primary  {{colors.on_primary.hex}};
-@define-color surface     {{colors.surface.hex}}ee;
+@define-color surface     {{colors.surface.hex}};
 @define-color on-surface  {{colors.on_surface.hex}};
 @define-color outline     {{colors.outline.hex}};
