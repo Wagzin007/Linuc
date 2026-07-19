@@ -2,7 +2,7 @@
 # Instala e habilita o daemon gamemode (governor de CPU + prioridade em jogos).
 set -euo pipefail
 
-sudo pacman -S --noconfirm --needed gamemode lib32-gamemode
+sudo pacman -S --noconfirm --needed gamemode
 
 mkdir -p ~/.config
 cat > ~/.config/gamemode.ini <<'EOF'
