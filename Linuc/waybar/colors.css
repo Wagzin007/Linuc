@@ -3,6 +3,6 @@
    o style.css (que dá @import nele) e a barra não aparece. */
 @define-color primary     #a8c7fa;
 @define-color on-primary  #00315c;
-@define-color surface     #1a1c1eee;
+@define-color surface     #1a1c13;
 @define-color on-surface  #e2e2e6;
 @define-color outline     #43474e;

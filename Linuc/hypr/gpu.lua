@@ -1,7 +1,8 @@
 -- ~/.config/hypr/gpu.lua
--- Env vars de renderização. Esse é o fallback genérico versionado no repo.
--- O install.sh REESCREVE esse arquivo automaticamente de acordo com a GPU
--- detectada (Intel/AMD/NVIDIA) ou se estiver rodando dentro de uma VM —
--- é isso que resolve apps (kitty, a janela do SUPER+H etc) não abrirem por
--- causa de aceleração de hardware mal configurada.
-hl.env("WLR_NO_HARDWARE_CURSORS", "0")
+-- Gerado automaticamente pelo install.sh em 2026-07-19.
+-- GPU detectada: 01:00.0 VGA compatible controller: Advanced Micro Devices, Inc. [AMD/ATI] RV710 [Radeon HD 4350/4550]  |  Virtualização: none
+none
+
+hl.env("WLR_RENDERER_ALLOW_SOFTWARE", "1")
+hl.env("LIBGL_ALWAYS_SOFTWARE", "1")
+hl.env("WLR_NO_HARDWARE_CURSORS", "1")
