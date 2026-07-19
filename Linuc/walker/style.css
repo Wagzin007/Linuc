@@ -1,0 +1,35 @@
+/* Linuc dotfiles — walker, Material You */
+* {
+  font-family: "Roboto Flex", sans-serif;
+  font-size: 14px;
+}
+
+#window {
+  background: transparent;
+}
+
+#box {
+  background-color: #1a1c1eee;
+  border-radius: 24px;
+  padding: 12px;
+  border: 1px solid #43474e;
+}
+
+#search {
+  background-color: #2a2c2e;
+  border-radius: 18px;
+  padding: 10px 16px;
+  color: #e2e2e6;
+  caret-color: #a8c7fa;
+}
+
+row {
+  border-radius: 16px;
+  padding: 8px;
+  color: #e2e2e6;
+}
+
+row:selected {
+  background-color: #a8c7fa;
+  color: #00315c;
+}

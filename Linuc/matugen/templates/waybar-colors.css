@@ -1,0 +1,6 @@
+/* auto-gerado pelo matugen — importado em waybar/style.css */
+@define-color primary     {{colors.primary.hex}};
+@define-color on-primary  {{colors.on_primary.hex}};
+@define-color surface     {{colors.surface.hex}}ee;
+@define-color on-surface  {{colors.on_surface.hex}};
+@define-color outline     {{colors.outline.hex}};

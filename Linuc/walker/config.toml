@@ -1,0 +1,20 @@
+# Linuc dotfiles — walker (launcher leve, nativo Wayland, GTK4 layer-shell)
+# repo: https://github.com/abenz1267/walker
+
+close_when_open = true
+disable_click_to_close = false
+
+[list]
+max_entries = 8
+
+[search]
+placeholder = "Buscar apps, arquivos, cálculos..."
+
+[websearch]
+prefix = "?"
+
+[calc]
+prefix = "="
+
+[app_launch_prefix]
+terminal = "kitty -e"
