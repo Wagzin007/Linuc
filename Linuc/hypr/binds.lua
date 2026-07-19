@@ -1,13 +1,13 @@
 -- ~/.config/hypr/binds.lua
 local mainMod = "SUPER"
 
-hl.bind(mainMod .. " + Return", hl.dsp.exec_cmd("kitty"))
+hl.bind(mainMod .. " + Return", hl.dsp.exec_cmd("~/.config/linuc-scripts/kitty-safe.sh"))
 hl.bind(mainMod .. " + Q", hl.dsp.window.close())
 hl.bind(mainMod .. " + E", hl.dsp.exec_cmd("dolphin"))
 hl.bind(mainMod .. " + B", hl.dsp.exec_cmd("firefox"))
 hl.bind(mainMod .. " + Space", hl.dsp.exec_cmd("walker"))
-hl.bind(mainMod .. " + T", hl.dsp.exec_cmd("kitty -e btop"))
-hl.bind(mainMod .. " + H", hl.dsp.exec_cmd("kitty --class linuc-help -e ~/.config/linuc-scripts/show-keybinds.sh"))
+hl.bind(mainMod .. " + T", hl.dsp.exec_cmd("~/.config/linuc-scripts/kitty-safe.sh -e btop"))
+hl.bind(mainMod .. " + H", hl.dsp.exec_cmd("~/.config/linuc-scripts/kitty-safe.sh --class linuc-help -e ~/.config/linuc-scripts/show-keybinds.sh"))
 hl.bind(mainMod .. " + SHIFT + Q", hl.dsp.exec_cmd("hyprctl dispatch 'hl.dsp.exit()'"))
 
 hl.bind(mainMod .. " + V", hl.dsp.window.float({ action = "toggle" }))

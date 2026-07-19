@@ -46,8 +46,22 @@ pkgs_gpu=()
 if echo "$GPU_INFO" | grep -qi intel; then
   pkgs_gpu+=(mesa vulkan-intel intel-media-driver libva-intel-driver)
 fi
+
+AMD_LEGACY=false
 if echo "$GPU_INFO" | grep -qi amd; then
-  pkgs_gpu+=(mesa vulkan-radeon libva-mesa-driver xf86-video-amdgpu)
+  # Placas AMD anteriores à GCN (pré-2012, ex: TeraScale/RV7xx/Evergreen) usam
+  # o driver kernel legado 'radeon', não o 'amdgpu' moderno, e NÃO têm Vulkan.
+  # Detectar isso corretamente evita instalar vulkan-radeon (que não funciona
+  # nelas) e avisa que a placa é o gargalo real, não a config.
+  if lspci -k | grep -A3 -iE 'vga|3d|display' | grep -qi "Kernel driver in use: radeon$"; then
+    AMD_LEGACY=true
+    warn "GPU AMD pré-GCN detectada (driver kernel legado 'radeon', sem Vulkan)."
+    warn "Hyprland (Wayland) tem suporte limitado nesse tipo de placa; renderização"
+    warn "por software será usada por padrão pra garantir estabilidade."
+    pkgs_gpu+=(mesa xf86-video-ati libva-mesa-driver)
+  else
+    pkgs_gpu+=(mesa vulkan-radeon libva-mesa-driver xf86-video-amdgpu)
+  fi
 fi
 if echo "$GPU_INFO" | grep -qi nvidia; then
   warn "GPU NVIDIA detectada. Hyprland não tem suporte oficial NVIDIA;"
@@ -89,6 +103,10 @@ GPU_LUA="$DOTS_DIR/hypr/gpu.lua"
 
   if [ "$VIRT" != "none" ] && [ -n "$VIRT" ]; then
     warn "Rodando dentro de uma VM ($VIRT) — forçando renderização por software."
+    echo 'hl.env("WLR_RENDERER_ALLOW_SOFTWARE", "1")'
+    echo 'hl.env("LIBGL_ALWAYS_SOFTWARE", "1")'
+    echo 'hl.env("WLR_NO_HARDWARE_CURSORS", "1")'
+  elif [ "$AMD_LEGACY" = true ]; then
     echo 'hl.env("WLR_RENDERER_ALLOW_SOFTWARE", "1")'
     echo 'hl.env("LIBGL_ALWAYS_SOFTWARE", "1")'
     echo 'hl.env("WLR_NO_HARDWARE_CURSORS", "1")'
