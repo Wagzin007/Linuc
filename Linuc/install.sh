@@ -153,6 +153,14 @@ sudo pacman -S --noconfirm --needed \
   zoxide eza fzf bat ripgrep fd
 
 # --- 5. Pacotes AUR (launcher/elephant, matugen, tema SDDM) ---
+# Remove pacotes de tentativas antigas que conflitam com os nomes atuais
+for stale in walker-bin walker-git; do
+  if pacman -Qq "$stale" &>/dev/null; then
+    warn "Removendo '$stale' (conflita com o pacote 'walker' atual)..."
+    sudo pacman -R --noconfirm "$stale"
+  fi
+done
+
 log "Instalando pacotes AUR (elephant + provedores do walker, matugen, tema SDDM, unrar)..."
 yay -S --noconfirm --needed \
   walker \
