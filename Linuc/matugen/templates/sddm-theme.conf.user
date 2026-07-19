@@ -1,0 +1,33 @@
+[General]
+Background="/usr/share/backgrounds/linuc-current.jpg"
+DimBackgroundImage="0.35"
+PartialBlur="true"
+BlurRadius="6"
+
+MainColor="{{colors.on_surface.hex}}"
+AccentColor="{{colors.primary.hex}}"
+BackgroundColor="{{colors.surface.hex}}"
+OverrideLoginButtonTextColor="{{colors.on_primary.hex}}"
+
+HaveFormBackground="true"
+FormPosition="center"
+RoundCorners="28"
+ScreenPadding="0"
+
+InterfaceShadowSize="6"
+InterfaceShadowOpacity="0.45"
+
+Font="Roboto Flex"
+FontSize=""
+HeaderText="Bem-vindo(a)"
+HourFormat="HH:mm"
+DateFormat="dddd, d 'de' MMMM"
+Locale="pt_BR"
+
+ForceLastUser="true"
+ForcePasswordFocus="true"
+ForceHideCompletePassword="true"
+ForceHideVirtualKeyboardButton="true"
+ForceHideSystemButtons="false"
+AllowEmptyPassword="false"
+AllowBadUsernames="false"

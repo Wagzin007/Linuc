@@ -1,0 +1,37 @@
+[General]
+# Linuc dotfiles — Sugar Candy com paleta Material You
+# Esse arquivo é reescrito automaticamente por scripts/sync-sddm-theme.sh
+# (roda no install.sh e sempre que você quiser sincronizar com o wallpaper atual).
+
+Background="/usr/share/backgrounds/linuc-current.jpg"
+DimBackgroundImage="0.35"
+PartialBlur="true"
+BlurRadius="6"
+
+MainColor="#e2e2e6"
+AccentColor="#a8c7fa"
+BackgroundColor="#1a1c1e"
+OverrideLoginButtonTextColor="#00315c"
+
+HaveFormBackground="true"
+FormPosition="center"
+RoundCorners="28"
+ScreenPadding="0"
+
+InterfaceShadowSize="6"
+InterfaceShadowOpacity="0.45"
+
+Font="Roboto Flex"
+FontSize=""
+HeaderText="Bem-vindo(a)"
+HourFormat="HH:mm"
+DateFormat="dddd, d 'de' MMMM"
+Locale="pt_BR"
+
+ForceLastUser="true"
+ForcePasswordFocus="true"
+ForceHideCompletePassword="true"
+ForceHideVirtualKeyboardButton="true"
+ForceHideSystemButtons="false"
+AllowEmptyPassword="false"
+AllowBadUsernames="false"

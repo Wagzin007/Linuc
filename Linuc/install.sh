@@ -232,6 +232,7 @@ if [ -d "$DOTS_DIR/scripts" ]; then
   chmod +x "$DOTS_DIR/scripts/"*.sh 2>/dev/null || true
   mkdir -p "$CONFIG_DIR/linuc-scripts"
   cp "$DOTS_DIR/scripts/"*.sh "$CONFIG_DIR/linuc-scripts/" 2>/dev/null || true
+  cp "$DOTS_DIR/scripts/"*.conf.user "$CONFIG_DIR/linuc-scripts/" 2>/dev/null || true
 fi
 
 # --- 7. Pastas padrão do usuário (Download, Imagens, Documentos, etc) ---
@@ -264,7 +265,7 @@ if [ -f "$CONFIG_DIR/hypr/wallpapers/current.jpg" ] && [ -f "$DOTS_DIR/scripts/m
     warn "matugen falhou, rode manualmente depois com um wallpaper."
 fi
 
-# --- 11. SDDM ---
+# --- 11. SDDM (Material You também no login) ---
 log "Habilitando SDDM..."
 sudo mkdir -p /etc/sddm.conf.d
 sudo tee /etc/sddm.conf.d/theme.conf > /dev/null <<'EOF'
@@ -272,6 +273,14 @@ sudo tee /etc/sddm.conf.d/theme.conf > /dev/null <<'EOF'
 Current=sugar-candy
 EOF
 sudo systemctl enable sddm.service
+
+log "Aplicando o Material You na tela de login..."
+if [ -f "$CONFIG_DIR/linuc-scripts/sync-sddm-theme.sh" ]; then
+  bash "$CONFIG_DIR/linuc-scripts/sync-sddm-theme.sh" || \
+    warn "Não deu pra sincronizar o tema do SDDM agora; rode ~/.config/linuc-scripts/sync-sddm-theme.sh manualmente depois."
+else
+  warn "sync-sddm-theme.sh não encontrado, pulando tema do SDDM."
+fi
 
 # --- 12. Shell padrão ---
 if command -v zsh >/dev/null 2>&1; then

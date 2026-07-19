@@ -95,6 +95,24 @@ Aperte `SUPER + H` a qualquer momento pra abrir uma janelinha flutuante com a
 lista completa de atalhos da dotfile e uma descrição curta de cada um
 (script em `scripts/show-keybinds.sh`, copiado pra `~/.config/linuc-scripts/`).
 
+## SDDM (tela de login) com Material You
+
+O tema (Sugar Candy) usa a mesma paleta do resto do sistema: cor de destaque,
+fundo e o próprio wallpaper atual — tudo gerado a partir do `theme.conf.user`
+que o matugen escreve.
+
+Como o tema do SDDM fica em `/usr/share` (área do sistema, o SDDM roda como
+outro usuário e não enxerga sua `$HOME`), sincronizar precisa de `sudo`. Por
+isso isso **não** acontece automaticamente toda vez que você troca de
+wallpaper pelo `SUPER+W` (pra não ficar pedindo senha o tempo todo). Quando
+quiser levar o visual atual pra tela de login, roda:
+
+```bash
+~/.config/linuc-scripts/sync-sddm-theme.sh
+```
+
+O `install.sh` já roda isso uma vez sozinho no fim da instalação.
+
 ## Trocar de wallpaper
 
 **Do jeito fácil:** aperte `SUPER + W`. Abre um seletor com preview das imagens
