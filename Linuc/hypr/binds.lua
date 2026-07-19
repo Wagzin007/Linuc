@@ -16,7 +16,7 @@ hl.bind(M("SHIFT + Q"), hl.dsp.exit())
 hl.bind(M("L"), hl.dsp.exec_cmd("hyprlock"))
 hl.bind(M("P"), hl.dsp.window.pseudo({ action = "toggle" }))
 hl.bind(M("J"), hl.dsp.layout("togglesplit"))
-hl.bind(M("T"), hl.dsp.exec_cmd("kitty -e btop"))
+hl.bind(M("T"), hl.dsp.exec_cmd("kitty"))
 hl.bind(M("H"), hl.dsp.exec_cmd("kitty --class linuc-help -e ~/.config/linuc-scripts/show-keybinds.sh"))
 hl.bind(M("Print"), hl.dsp.exec_cmd("grimblast copy area"))
 hl.bind(M("SHIFT + C"), hl.dsp.exec_cmd("hyprpicker -a")) -- color-picker
