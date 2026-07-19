@@ -154,11 +154,17 @@ fi
 # --- 8. Gerar paleta Material You inicial ---
 if [ -f "$CONFIG_DIR/hypr/wallpapers/current.jpg" ]; then
   log "Gerando paleta Material You a partir do wallpaper padrão..."
+
   if [ -f "$DOTS_DIR/scripts/matugen-wallpaper.sh" ]; then
-    bash "$DOTS_DIR/scripts/matugen-wallpaper.sh" "$CONFIG_DIR/hypr/wallpapers/current.jpg" || \
-    warn "matugen falhou, rode manualmente depois com um wallpaper."
-else
+    bash "$DOTS_DIR/scripts/matugen-wallpaper.sh" \
+      "$CONFIG_DIR/hypr/wallpapers/current.jpg" || \
+      warn "matugen falhou, rode manualmente depois com um wallpaper."
+  else
     warn "matugen-wallpaper.sh não encontrado; pulando."
+  fi
+
+else
+  warn "Wallpaper padrão não encontrado; pulando geração da paleta."
 fi
 
 # --- 9. SDDM ---
