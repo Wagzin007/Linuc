@@ -93,7 +93,7 @@ sudo pacman -S --noconfirm --needed \
   btop \
   waybar dunst \
   qt5ct qt6ct kvantum kvantum-qt5 \
-  gamemode lib32-gamemode \
+  gamemode \
   zram-generator \
   gimp obs-studio kdenlive
 
