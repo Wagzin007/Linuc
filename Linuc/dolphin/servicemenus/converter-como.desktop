@@ -1,0 +1,38 @@
+[Desktop Entry]
+Type=Service
+ServiceTypes=KonqPopupMenu/Plugin
+MimeType=image/png;image/jpeg;image/bmp;image/x-ms-bmp;image/tiff;image/webp;image/gif;image/x-icon;
+Icon=image-x-generic
+X-KDE-Priority=TopLevel
+X-KDE-Submenu=Converter como
+Actions=ConvPNG;ConvJPG;ConvWEBP;ConvBMP;ConvTIFF;ConvICO;
+
+[Desktop Action ConvPNG]
+Name=PNG
+Icon=image-png
+Exec=__SCRIPT__ png %F
+
+[Desktop Action ConvJPG]
+Name=JPG
+Icon=image-jpeg
+Exec=__SCRIPT__ jpg %F
+
+[Desktop Action ConvWEBP]
+Name=WEBP
+Icon=image-webp
+Exec=__SCRIPT__ webp %F
+
+[Desktop Action ConvBMP]
+Name=BMP
+Icon=image-bmp
+Exec=__SCRIPT__ bmp %F
+
+[Desktop Action ConvTIFF]
+Name=TIFF
+Icon=image-tiff
+Exec=__SCRIPT__ tiff %F
+
+[Desktop Action ConvICO]
+Name=ICO
+Icon=image-x-generic
+Exec=__SCRIPT__ ico %F

@@ -273,6 +273,22 @@ fi
 XDG_MENU_PREFIX=arch- kbuildsycoca6 --noincremental 2>/dev/null || \
   warn "kbuildsycoca6 não encontrado agora; ele roda de novo no primeiro login do Dolphin."
 
+# --- 8b. Conversor de imagem no Dolphin ("Converter como") ---
+log "Instalando conversor de imagem (menu 'Converter como' do Dolphin)..."
+sudo pacman -S --noconfirm --needed imagemagick
+mkdir -p "$HOME/.local/share/kio/servicemenus"
+
+if [ -f "$DOTS_DIR/dolphin/servicemenus/converter-como.desktop" ]; then
+  sed "s|__SCRIPT__|$CONFIG_DIR/linuc-scripts/img-convert.sh|g" \
+    "$DOTS_DIR/dolphin/servicemenus/converter-como.desktop" \
+    > "$HOME/.local/share/kio/servicemenus/converter-como.desktop"
+  chmod +x "$HOME/.local/share/kio/servicemenus/converter-como.desktop"
+  kbuildsycoca6 --noincremental 2>/dev/null || \
+    warn "kbuildsycoca6 não encontrado agora; o menu 'Converter como' aparece no próximo login."
+else
+  warn "converter-como.desktop não encontrado no repo, pulando menu de conversão de imagem."
+fi
+
 # --- 9. zram e gamemode ---
 log "Configurando zram..."
 [ -f "$DOTS_DIR/scripts/setup-zram.sh" ] && bash "$DOTS_DIR/scripts/setup-zram.sh" || warn "setup-zram.sh não encontrado, pulando."
