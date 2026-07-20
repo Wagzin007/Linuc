@@ -1,0 +1,140 @@
+# LESSONS.md — Erros já cometidos nessa dotfile e como não repetir
+
+Esse arquivo existe pra eu (Claude) e pra você não repetirmos os mesmos bugs.
+Toda vez que eu mexer nesse repo de novo, eu leio isso primeiro.
+
+## 1. NUNCA jogue saída de comando crua dentro de um arquivo gerado
+
+Aconteceu **três vezes** nesse projeto, sempre pelo mesmo motivo raiz:
+
+- `warn()`/`log()` imprimiam com códigos ANSI de cor no **stdout**, e foram
+  chamadas dentro de um bloco `{ ... } > arquivo.lua` — o código de cor foi
+  parar dentro do arquivo e quebrou a sintaxe Lua.
+  **Fix permanente**: `log`/`warn`/`err` sempre mandam pro **stderr**
+  (`>&2`), nunca stdout, em qualquer script.
+
+- `$GPU_INFO` (saída do `lspci`) foi interpolada direto num comentário Lua
+  (`echo "-- GPU detectada: $GPU_INFO"`). Se a variável tiver uma quebra de
+  linha escondida, o comentário `--` quebra no meio da linha e sobra texto
+  solto que o Lua tenta interpretar como código.
+  **Fix permanente**: qualquer variável dinâmica que vai pra dentro de um
+  arquivo gerado passa antes por `tr '\n\t' '  ' | tr -s ' '` pra virar uma
+  linha só, garantido. Regra geral: **nunca confie que a saída de um
+  comando é uma linha só só porque "normalmente é"**.
+
+## 2. Hex de cor com 9+ dígitos quebra QUALQUER parser CSS (GTK ou navegador)
+
+Bug: `@define-color surface #1a1c1eee;` tinha uma "cola manual" de sufixo de
+alpha (`ee`) em cima de uma cor que às vezes já vinha formatada. CSS só
+aceita `#RGB`, `#RGBA`, `#RRGGBB`, `#RRGGBBAA` — nada mais.
+
+**Regra permanente**: matugen (ou qualquer gerador de tema) deve emitir
+SEMPRE `#RRGGBB` puro (6 dígitos). Transparência nunca é colada na string
+da cor — é aplicada na hora do uso, com a função `alpha(@cor, 0.5)` do
+próprio GTK CSS.
+
+## 3. Hyprland: `rgba()`/`rgb()` no config querem hex SEM `#`, não RGB decimal
+
+`hl.env`/`hyprlock.conf`/`hypr/colors.lua` usam `rgba(a8c7faee)` — hex puro,
+sem `#`, direto colado com o alpha. O matugen tem dois filtros diferentes:
+- `.hex` → `#a8c7fa` (com #, pra CSS)
+- `.hex_stripped` → `a8c7fa` (sem #, pra Hyprland/hyprlang)
+- `.rgb` → `168, 199, 250` (decimal, NÃO serve pra `rgba()` do Hyprland)
+
+Usar `.rgb` dentro de `rgba(...)` do Hyprland é o bug errado — só percebe
+quando o Hyprland já tá tentando carregar o config e falha.
+
+## 4. Waybar usa GTK3 DE VERDADE — não é um CSS "capado"
+
+Confirmado na wiki oficial, numa discussão dos próprios devs, e no
+`style.css` padrão que vem com a Waybar: `box-shadow`, `@keyframes` e
+`animation` são **suportados oficialmente**. O erro que gerou a falsa
+conclusão "evita isso tudo" foi um bug de sintaxe específico:
+
+**GTK CSS não aceita seletor combinado em `@keyframes`** tipo
+`0%, 100% { opacity: 1; }`. Precisa de um bloco por porcentagem:
+
+```css
+@keyframes pulse {
+  0%   { opacity: 1; }
+  50%  { opacity: 0.5; }
+  100% { opacity: 1; }
+}
+#elemento {
+  animation-name: pulse;
+  animation-duration: 1.5s;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+```
+
+Prefira as propriedades separadas (`animation-name`, `animation-duration`
+etc) em vez do shorthand `animation: pulse 1.5s ease-in-out infinite;` —
+mais previsível no parser do GTK.
+
+## 5. Nomes de pacote AUR: sempre confirmar antes de colocar no installer
+
+Já aconteceu de eu inventar/chutar nome de pacote (`kvantum-theme-materialyou-git`,
+`lib32-gamemode` que não existe) e o nome real da PASTA instalada não bater
+com o nome do PACOTE (ex: pacote `sddm-theme-sugar-candy-git` instala em
+`/usr/share/sddm/themes/Sugar-Candy`, com maiúsculas, não `sugar-candy`).
+
+**Regra permanente**:
+- Nunca cravar um nome de pacote sem confirmar (web_search) que ele existe
+  de verdade no repo oficial ou no AUR.
+- Quando o nome da pasta/arquivo instalado pode variar entre forks/versões
+  do pacote, **detectar em runtime** (`find ... -iname`) em vez de chutar
+  um nome fixo no script.
+
+## 6. `qt5ct` é o configurador visual, não um daemon
+
+Rodar `qt5ct` no autostart do Hyprland abre a janela de configurações toda
+vez que loga — não é isso que aplica o tema. O tema Qt é aplicado sozinho
+via `QT_QPA_PLATFORMTHEME=qt5ct` + o `~/.config/qt5ct/qt5ct.conf` já
+configurado. `qt5ct` só deve ser executado quando o usuário quer editar
+manualmente.
+
+## 7. Pacotes referenciados em config mas nunca instalados
+
+Vários bugs foram simplesmente "uso X no bind/config mas esqueci de
+colocar X no installer": `hyprlock`, `hypridle`, `hyprpaper`, `pavucontrol`,
+`papirus-icon-theme` (referenciado em 3 lugares, instalado em nenhum).
+
+**Regra permanente**: depois de qualquer mudança no installer ou nos
+configs, rodar uma varredura cruzando todo comando usado em
+binds/autostart/window_rules contra a lista de pacotes do `install.sh`
+antes de entregar.
+
+## 8. chsh falha silenciosamente sem aviso claro
+
+`chsh -s $(which zsh)` falha com "Shell não alterado" se o caminho não
+tiver listado em `/etc/shells`. Sempre garantir isso antes:
+```bash
+grep -qxF "$ZSH_PATH" /etc/shells || echo "$ZSH_PATH" | sudo tee -a /etc/shells
+```
+
+## 9. hyprpaper cacheia textura pelo CAMINHO do arquivo
+
+Sobrescrever o mesmo `current.jpg` no disco NÃO faz o hyprpaper recarregar
+a imagem — ele já tem a textura em memória associada aquele path. Solução:
+alternar entre dois nomes reais (`wall-a.jpg`/`wall-b.jpg`), usar
+`current.jpg` como symlink estável pra outras configs (hyprlock, SDDM), e
+mandar `hyprctl hyprpaper preload/wallpaper/unload` explicitamente a cada
+troca.
+
+## 10. GPU muito antiga (pré-GCN / TeraScale) não é bug de config
+
+Detectar pelo **driver de kernel em uso** (`radeon` vs `amdgpu`), não só
+pela string "AMD" — placas TeraScale (pré-2012) não têm Vulkan, então
+instalar `vulkan-radeon` nelas não faz nada. Nesses casos o caminho certo é
+forçar renderização por software (`LIBGL_ALWAYS_SOFTWARE=1`) direto no
+`gpu.lua`, e avisar o usuário que o teto de performance é da placa, não da
+config.
+
+## 11. Hardware acceleration quebrando apps GPU-pesados (kitty)
+
+Segfault sem log é a assinatura clássica de crash em EGL/OpenGL. Testar
+com `LIBGL_ALWAYS_SOFTWARE=1 <app>` confirma se é driver antes de mexer em
+qualquer outra coisa. `kitty-safe.sh` (wrapper com fallback automático pra
+software rendering em caso de exit 139) é uma rede de segurança, não
+substitui achar a causa raiz.

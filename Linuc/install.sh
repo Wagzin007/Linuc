@@ -95,10 +95,19 @@ log "Gerando hypr/gpu.lua de acordo com a GPU/ambiente detectado..."
 VIRT="$(systemd-detect-virt 2>/dev/null || echo none)"
 GPU_LUA="$DOTS_DIR/hypr/gpu.lua"
 
+# NUNCA jogue variáveis dinâmicas (saída de comando) cru dentro de um arquivo
+# gerado, nem dentro de comentário. Se a variável tiver uma quebra de linha
+# escondida, ela quebra o comentário Lua no meio e gera erro de sintaxe --
+# já aconteceu 2x antes (uma com código ANSI de cor, outra com isso aqui).
+# tr colapsa qualquer newline/tab em espaço, então a linha final é SEMPRE
+# uma linha só, não importa o que o lspci/systemd-detect-virt cuspir.
+GPU_INFO_SAFE="$(printf '%s' "${GPU_INFO:-nenhuma}" | tr '\n\t' '  ' | tr -s ' ')"
+VIRT_SAFE="$(printf '%s' "$VIRT" | tr '\n\t' '  ' | tr -s ' ')"
+
 {
   echo "-- ~/.config/hypr/gpu.lua"
   echo "-- Gerado automaticamente pelo install.sh em $(date +%F)."
-  echo "-- GPU detectada: ${GPU_INFO:-nenhuma}  |  Virtualização: $VIRT"
+  echo "-- GPU detectada: ${GPU_INFO_SAFE}  |  Virtualizacao: ${VIRT_SAFE}"
   echo
 
   if [ "$VIRT" != "none" ] && [ -n "$VIRT" ]; then

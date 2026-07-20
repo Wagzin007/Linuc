@@ -68,6 +68,22 @@ O instalador:
 12. Gera a paleta Material You inicial a partir do wallpaper padrão.
 13. Habilita o SDDM como display manager.
 
+## Waybar e GTK CSS
+
+A Waybar usa **GTK3 de verdade** pra estilizar (não é um CSS "capado" à
+parte) — confirmado na wiki oficial e no próprio `style.css` padrão que
+vem com ela. `box-shadow`, `@keyframes` e `animation` são suportados
+oficialmente, inclusive pro efeito de bateria crítica piscando.
+
+A única pegadinha real: **GTK CSS não aceita seletor combinado em
+`@keyframes`** tipo `0%, 100% { }` — precisa de um bloco por porcentagem
+(`0% {}`, `50% {}`, `100% {}` separados). E prefira as propriedades
+`animation-name`/`animation-duration`/`animation-timing-function`
+separadas em vez do shorthand `animation: ...` — mais previsível.
+
+Detalhes técnicos completos (incluindo outros bugs já caçados e como não
+repeti-los) estão em [`LESSONS.md`](./LESSONS.md).
+
 ## Changelog
 
 **v0.2** — correções feitas após a primeira instalação limpa (ver histórico
