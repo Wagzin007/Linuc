@@ -15,8 +15,11 @@ total_line_pct=""
 
 while IFS= read -r l1 && IFS= read -r l2 <&3; do
   name=$(echo "$l1" | awk '{print $1}')
-  read -r _ u1 n1 s1 i1 io1 irq1 sirq1 <<< "$l1"
-  read -r _ u2 n2 s2 i2 io2 irq2 sirq2 <<< "$l2"
+  # o "_" final descarta steal/guest/guest_nice (existem no /proc/stat de
+  # qualquer kernel atual) - sem ele, esses campos caem todos concatenados
+  # dentro de sirq1/sirq2 e quebram a conta la embaixo
+  read -r _ u1 n1 s1 i1 io1 irq1 sirq1 _ <<< "$l1"
+  read -r _ u2 n2 s2 i2 io2 irq2 sirq2 _ <<< "$l2"
 
   idle1=$((i1 + io1)); idle2=$((i2 + io2))
   total1=$((u1 + n1 + s1 + i1 + io1 + irq1 + sirq1))
@@ -35,4 +38,13 @@ while IFS= read -r l1 && IFS= read -r l2 <&3; do
   fi
 done <<< "$snap1" 3<<< "$snap2"
 
-printf '{"text":"󰻠 %s%%","tooltip":"%b"}\n' "${total_line_pct:-0}" "$tooltip"
+pct="${total_line_pct:-0}"
+
+class="normal"
+if [ "$pct" -ge 90 ]; then
+  class="critical"
+elif [ "$pct" -ge 70 ]; then
+  class="warning"
+fi
+
+printf '{"text":"󰻠 %s%%","tooltip":"%s","class":"%s","percentage":%s}\n' "$pct" "$tooltip" "$class" "$pct"

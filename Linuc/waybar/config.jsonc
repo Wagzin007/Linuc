@@ -9,22 +9,31 @@
 
   "modules-left": ["hyprland/workspaces", "hyprland/window"],
   "modules-center": ["clock"],
-  "modules-right": ["tray", "pulseaudio", "network", "custom/cpu", "custom/mem", "battery", "custom/power"],
+  "modules-right": ["tray", "pulseaudio", "network", "idle_inhibitor", "group/stats", "battery", "custom/power"],
 
   "hyprland/workspaces": {
     "format": "{icon}",
     "on-click": "activate",
+    // API atual (Hyprland 0.55+, dispatcher via Lua): hl.dsp.focus({workspace=...})
+    "on-scroll-up": "hyprctl dispatch 'hl.dsp.focus({workspace=\"e+1\"})'",
+    "on-scroll-down": "hyprctl dispatch 'hl.dsp.focus({workspace=\"e-1\"})'",
     "format-icons": {
       "active": "",
       "default": "",
-      "empty": ""
+      "empty": "",
+      "persistent": "",
+      "visible": "",
+      "urgent": ""
     },
     "persistent-workspaces": { "*": 5 }
   },
 
   "hyprland/window": {
+    "format": "{}",
     "max-length": 32,
-    "separate-outputs": true
+    "separate-outputs": true,
+    "icon": true,
+    "icon-size": 18
   },
 
   "clock": {
@@ -40,6 +49,7 @@
     "format": "{icon} {volume}%",
     "format-muted": "󰝟",
     "format-icons": { "default": ["󰕿", "󰖀", "󰕾"] },
+    "scroll-step": 5,
     "on-click": "pavucontrol"
   },
 
@@ -47,7 +57,28 @@
     "format-wifi": "󰤨 {essid}",
     "format-ethernet": "󰈀 {ifname}",
     "format-disconnected": "󰤭",
+    "tooltip-format-wifi": "{essid} ({signalStrength}%)\n{ipaddr}/{cidr}",
+    "tooltip-format-ethernet": "{ifname}\n{ipaddr}/{cidr}",
+    "tooltip-format-disconnected": "Desconectado",
     "on-click": "nm-connection-editor"
+  },
+
+  "idle_inhibitor": {
+    "format": "{icon}",
+    "format-icons": { "activated": "☀", "deactivated": "☾" },
+    "tooltip-format-activated": "Tela sempre ativa — clique pra permitir suspensão",
+    "tooltip-format-deactivated": "Suspensão automática ativa — clique pra manter a tela acordada"
+  },
+
+  // Agrupa cpu+mem: custom/cpu fica sempre visivel (leader), custom/mem so
+  // aparece ao passar o mouse - menos poluicao visual, mesmo dado disponivel.
+  "group/stats": {
+    "orientation": "horizontal",
+    "drawer": {
+      "transition-duration": 400,
+      "children-class": "drawer-child"
+    },
+    "modules": ["custom/cpu", "custom/mem"]
   },
 
   "custom/cpu": {
@@ -67,6 +98,7 @@
   "battery": {
     "format": "{icon} {capacity}%",
     "format-icons": ["󰁺", "󰁻", "󰁽", "󰂀", "󰁹"],
+    "tooltip-format": "{capacity}% — {timeTo}",
     "states": { "warning": 25, "critical": 10 }
   },
 

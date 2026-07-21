@@ -1,9 +1,22 @@
-/* Fallback (Material You padrão) - sobrescrito pelo matugen ao trocar de wallpaper.
+/* Fallback (Material You padrao) - sobrescrito pelo matugen ao trocar de wallpaper.
    Cores sempre em #RRGGBB puro (6 digitos). Transparencia e feita com alpha()
    direto no style.css, nunca colando sufixo de opacidade na cor aqui -
-   foi exatamente isso que quebrou o parser do GTK CSS antes (hex com 9 digitos). */
-@define-color primary     #a8c7fa;
-@define-color on-primary  #00315c;
-@define-color surface     #1a1c1e;
-@define-color on-surface  #e2e2e6;
-@define-color outline     #43474e;
+   foi exatamente isso que quebrou o parser do GTK CSS antes (hex com 9 digitos).
+   Precisa espelhar exatamente as roles definidas em
+   matugen/templates/waybar-colors.css - esse arquivo aqui e sobrescrito por
+   inteiro no primeiro `matugen image ...`, entao nao da pra colocar nada
+   "extra" aqui que nao esteja tambem no template (ver @warning em style.css). */
+@define-color primary            #a8c7fa;
+@define-color on-primary         #00315c;
+@define-color secondary          #bfc6dc;
+@define-color on-secondary       #283041;
+@define-color tertiary           #dcbce9;
+@define-color on-tertiary        #3c2d4a;
+@define-color error              #ffb4ab;
+@define-color on-error           #690005;
+@define-color surface            #1a1c1e;
+@define-color on-surface         #e2e2e6;
+@define-color surface-variant    #33363c;
+@define-color on-surface-variant #c3c6cf;
+@define-color outline            #43474e;
+@define-color shadow             #000000;

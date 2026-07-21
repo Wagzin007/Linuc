@@ -103,6 +103,27 @@ completo de bugs no commit correspondente):
 - Todas as cópias de arquivo no installer viraram condicionais — arquivo
   faltando gera aviso, não aborta a instalação.
 
+**v0.3** — reforma da waybar (estilo, dinamismo e dois bugs reais achados
+nos custom modules, ver [`LESSONS.md` #12](./LESSONS.md#12-custom-modules-da-waybar-printf-b-corrompe-o-json-e-read-posicional-quebra-com-procstat-moderno)):
+- Paleta Material You expandida (`secondary`, `tertiary`, `error`,
+  `surface-variant`, `shadow`, com os pares `on-*`) — cor de aviso/crítico
+  agora vem do tema em vez de hex fixo.
+- `hyprland/workspaces` ganhou estados `urgent` (pulsa), `visible` e
+  `persistent`, mais scroll pra trocar de workspace (API `hl.dsp.focus`).
+- `hyprland/window` mostra o ícone do app (via icon-theme, não fonte).
+- `custom/cpu` e `custom/mem` agora saem de um `group` com drawer — o
+  segundo só aparece ao passar o mouse — e emitem `class` pra ficar
+  amarelo/vermelho como a bateria já fazia.
+- Módulo novo `idle_inhibitor` (evita suspensão com um clique).
+- `pulseaudio` ganhou `scroll-step` (rolar pra ajustar volume).
+- A barra inteira soma opacidade em `window#waybar.fullscreen` — some
+  quase por completo em jogo/vídeo fullscreen, volta ao encostar o mouse.
+- **Bugs reais corrigidos** (não eram do CSS, eram dos scripts): `waybar-cpu.sh`
+  quebrava a aritmética em qualquer kernel atual (`/proc/stat` tem campos
+  a mais que o `read` não esperava), e os dois scripts geravam JSON
+  inválido no tooltip (`printf %b` interpreta o `\n` e gera uma quebra de
+  linha crua em vez do escape `\n` que o JSON exige).
+
 Depois: reinicie e selecione a sessão **Hyprland** na tela de login.
 
 ## Atalhos

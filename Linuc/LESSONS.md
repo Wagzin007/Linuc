@@ -138,3 +138,57 @@ com `LIBGL_ALWAYS_SOFTWARE=1 <app>` confirma se é driver antes de mexer em
 qualquer outra coisa. `kitty-safe.sh` (wrapper com fallback automático pra
 software rendering em caso de exit 139) é uma rede de segurança, não
 substitui achar a causa raiz.
+
+## 12. Custom modules da waybar: `printf "%b"` corrompe o JSON, e `read` posicional quebra com /proc/stat moderno
+
+Dois bugs reais achados em `waybar-cpu.sh`/`waybar-mem.sh` ao testar a
+saída de verdade (nunca confiar só na leitura do código):
+
+- `printf '...%b...' "$tooltip"` com `%b` **interpreta** o `\n` da string
+  e vira uma quebra de linha crua dentro do JSON — JSON não aceita
+  controle cru dentro de uma string, só o escape `\n` literal (duas
+  caracteres: barra + n). **Fix permanente**: usar `%s`, nunca `%b`, pra
+  montar tooltip/texto de módulo custom. `%s` passa o `\\n` da string
+  adiante sem tocar, que é exatamente o que o parser JSON espera.
+
+- `read -r _ u1 n1 s1 i1 io1 irq1 sirq1 <<< "$linha_do_proc_stat"` com
+  número fixo de variáveis quebra em qualquer kernel atual, porque
+  `/proc/stat` tem `steal`/`guest`/`guest_nice` no final (existem desde
+  ~2.6.24, presentes em qualquer Linux moderno, não é coisa de container)
+  — os campos que sobram ficam TODOS concatenados na última variável
+  nomeada e destroem qualquer aritmética `$(( ))` feita em cima dela.
+  **Fix permanente**: sempre terminar um `read` posicional sobre uma
+  linha de tamanho não 100% garantido com um `_` extra no final pra
+  descartar sobra (`read -r _ u1 n1 s1 i1 io1 irq1 sirq1 _ <<< "$linha"`).
+  **Regra geral**: sempre rodar o script de verdade (`bash script.sh | jq`
+  ou `python3 -m json.tool`) depois de editar um custom module, não só
+  `bash -n` — `-n` não pega nem erro de aritmética em runtime nem JSON
+  malformado.
+
+## 13. Fatos confirmados sobre a API atual (waybar 0.15 / Hyprland 0.55+ / matugen) — não repesquisar
+
+- **Roles de cor que o matugen expõe** (confirmado no wiki oficial
+  `InioX/matugen`, e batendo com o que já é usado em
+  `hypr-colors.lua`/`kitty-colors.conf`/`dunstrc`): todo par
+  `<role>`/`on_<role>` de primary, secondary, tertiary, error, mais
+  surface/surface_variant/on_surface/on_surface_variant, outline,
+  outline_variant, shadow, scrim, background/on_background, e as
+  variantes `*_container`. Filtro de cor pra CSS é sempre `.hex`
+  (`{{colors.on_secondary.hex}}` etc.) — mesmo padrão já usado no projeto.
+- **Hyprland 0.55+ trocou dispatch por API Lua**: `hyprctl dispatch` com
+  sintaxe antiga (`workspace e+1`) não é mais o padrão documentado; a
+  wiki oficial (Status bars) mostra
+  `hyprctl dispatch 'hl.dsp.focus({workspace="e+1"})'` pra scroll trocar
+  de workspace no waybar.
+- **`-gtk-icon-transform` só funciona em ícone de verdade** (GtkImage/
+  ícone resolvido pelo icon-theme, tipo o do tray ou o `"icon": true` do
+  `hyprland/window`) — **não faz nada** em glifo de Nerd Font dentro de
+  um label de texto (que é como praticamente todo ícone deste projeto é
+  renderizado). Não perder tempo tentando animar transform nesses glifos.
+- **`window#waybar` ganha classes de estado direto do compositor/da
+  bateria**: `.fullscreen`, `.battery-<state>` (ex. `.battery-critical`),
+  entre outras — dá pra estilizar a barra inteira, não só um módulo, sem
+  nenhum script extra.
+- **`group/<nome>` com `drawer`** é a forma nativa de "revelar no hover":
+  o primeiro módulo em `"modules"` fica sempre visível (leader), o resto
+  aparece com `children-class` estilizável. Zero dependência nova.

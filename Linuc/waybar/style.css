@@ -3,22 +3,41 @@
    @keyframes e animation sao suportados oficialmente (o proprio style.css padrao
    da Waybar pisca a bateria critica assim). A unica pegadinha real e que o GTK CSS
    e mais rigido que CSS de navegador: @keyframes precisa de UM bloco por porcentagem
-   (nao aceita "0%, 100% { }" combinado num seletor so). */
+   (nao aceita "0%, 100% { }" combinado num seletor so).
+   Propriedades animaveis confirmadas na doc oficial (docs.gtk.org/gtk3/css-properties.html):
+   color, opacity, background-color, border-color, border-radius, padding, margin,
+   min-width, min-height, box-shadow - todas usadas abaixo. NAO existe "transform"
+   generico pra widgets em GTK3 CSS (so -gtk-icon-transform, e so pra icones de
+   verdade renderizados via GtkImage/icon-theme - nao pra glifos de fonte dentro
+   de um label, entao nao serve pros icones Nerd Font deste arquivo). */
 @import url("colors.css");
+
+/* Accent fixo de "aviso" - Material You so tem role nativa de "error", nao de
+   "warning". Por isso fica aqui e nao em colors.css/no template do matugen:
+   colors.css e sobrescrito por inteiro a cada wallpaper novo, style.css nao. */
+@define-color warning #ffd54f;
 
 * {
   font-family: "Roboto Flex", "Noto Sans", sans-serif;
   font-size: 13px;
   font-weight: 500;
   min-height: 0;
-  transition: background-color 0.15s ease-in-out, color 0.15s ease-in-out;
 }
 
 window#waybar {
   background: transparent;
+  transition: opacity 0.25s ease;
 }
 
-#workspaces, #window, #clock, #tray, #pulseaudio, #network,
+/* some quase por completo em fullscreen (jogo/video) e volta ao encostar o mouse */
+window#waybar.fullscreen {
+  opacity: 0.25;
+}
+window#waybar.fullscreen:hover {
+  opacity: 1;
+}
+
+#workspaces, #window, #clock, #tray, #pulseaudio, #network, #idle_inhibitor,
 #custom-cpu, #custom-mem, #battery, #custom-power {
   background-color: @surface;
   color: @on-surface;
@@ -26,8 +45,21 @@ window#waybar {
   padding: 4px 14px;
   margin: 3px 2px;
   border: 1px solid alpha(@outline, 0.35);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 1px 3px alpha(@shadow, 0.35);
+  transition: background-color 0.18s ease, color 0.18s ease,
+              border-color 0.18s ease, box-shadow 0.18s ease;
 }
+
+/* pulso de atencao reaproveitado por bateria critica, cpu/mem critico e
+   workspace urgente - um bloco por porcentagem, sem seletor combinado
+   ("0%, 100%"), e o pulo do gato pro GTK CSS aceitar. */
+@keyframes pulse-attention {
+  0%   { opacity: 1; }
+  50%  { opacity: 0.55; }
+  100% { opacity: 1; }
+}
+
+/* ---------- workspaces ---------- */
 
 #workspaces {
   padding: 4px 6px;
@@ -39,6 +71,22 @@ window#waybar {
   color: alpha(@on-surface, 0.55);
   border-radius: 14px;
   box-shadow: none;
+  /* padding e animavel no GTK CSS -> a pilula "cresce" suavemente ao ativar,
+     em vez de trocar de largura num corte seco */
+  transition: background-color 0.18s ease, color 0.18s ease,
+              padding 0.2s cubic-bezier(0.2, 0, 0, 1);
+}
+
+/* ordem importa: um workspace pode ser persistent+active ou visible+active ao
+   mesmo tempo (mesma especificidade button.X) - a regra declarada por ultimo
+   vence. active fica depois de persistent/visible, urgent por ultimo de todos. */
+#workspaces button.persistent {
+  color: alpha(@on-surface, 0.3);
+}
+
+#workspaces button.visible {
+  background-color: alpha(@primary, 0.16);
+  color: @primary;
 }
 
 #workspaces button.active {
@@ -47,15 +95,29 @@ window#waybar {
   padding: 0 14px;
 }
 
+#workspaces button.urgent {
+  background-color: @error;
+  color: @on-error;
+  animation-name: pulse-attention;
+  animation-duration: 1s;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
 #workspaces button:hover {
   background-color: alpha(@primary, 0.22);
   color: @on-surface;
 }
 
+/* ---------- janela ativa (com icone do app, via icon-theme - sem risco de
+   glifo errado, o GTK resolve o icone sozinho pela classe da janela) ---------- */
+
 #window {
   color: alpha(@on-surface, 0.75);
   font-weight: 400;
 }
+
+/* ---------- relogio ---------- */
 
 #clock {
   font-weight: 700;
@@ -65,41 +127,99 @@ window#waybar {
   background-color: alpha(@primary, 0.12);
 }
 
+/* ---------- tray ---------- */
+
 #tray { padding: 4px 10px; }
 #tray > .passive { opacity: 0.55; }
+#tray > .needs-attention { color: @error; }
 
-#pulseaudio:hover, #network:hover, #custom-cpu:hover, #custom-mem:hover {
+/* ---------- audio / rede / inhibitor / stats: hover generico.
+   Declarado ANTES dos estados semanticos abaixo de proposito: quando os dois
+   se aplicam (ex.: hover num modulo critico), o estado semantico - declarado
+   depois - vence a cascata e continua visivel por cima do hover. ---------- */
+
+#pulseaudio:hover, #network:hover, #idle_inhibitor:hover,
+#custom-cpu:hover, #custom-mem:hover {
   background-color: alpha(@primary, 0.12);
   border-color: alpha(@primary, 0.5);
+  box-shadow: 0 2px 6px alpha(@shadow, 0.4);
 }
 
-#battery.warning {
-  color: #ffd54f;
-  border-color: #ffd54f;
+#pulseaudio.muted {
+  color: alpha(@on-surface, 0.45);
 }
 
-/* pisca suave quando a bateria fica critica - um bloco por porcentagem,
-   sem seletor combinado, e o pulo do gato pro GTK CSS aceitar */
-@keyframes battery-critical-blink {
-  0%   { opacity: 1; }
-  50%  { opacity: 0.5; }
-  100% { opacity: 1; }
+#network.disconnected {
+  color: @error;
 }
 
-#battery.critical {
-  color: #ffb4ab;
-  border-color: #ffb4ab;
-  background-color: alpha(#ffb4ab, 0.15);
-  animation-name: battery-critical-blink;
+/* ---------- idle inhibitor: fica evidente quando ativado ---------- */
+
+#idle_inhibitor {
+  font-size: 14px;
+}
+
+#idle_inhibitor.activated {
+  color: @tertiary;
+  background-color: alpha(@tertiary, 0.14);
+  border-color: alpha(@tertiary, 0.5);
+}
+
+/* ---------- grupo cpu+mem: leader (cpu) sempre visivel, mem revela no
+   drawer ao passar o mouse. O grupo em si fica transparente - quem tem a
+   "pilula" e cada modulo filho, igual antes. ---------- */
+
+#stats {
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  border: none;
+  box-shadow: none;
+}
+
+.drawer-child {
+  margin-left: 2px;
+}
+
+#custom-cpu.warning, #custom-mem.warning {
+  color: @warning;
+  border-color: alpha(@warning, 0.6);
+}
+
+#custom-cpu.critical, #custom-mem.critical {
+  color: @error;
+  border-color: alpha(@error, 0.6);
+  background-color: alpha(@error, 0.12);
+  animation-name: pulse-attention;
   animation-duration: 1.5s;
   animation-timing-function: ease-in-out;
   animation-iteration-count: infinite;
 }
 
+/* ---------- bateria ---------- */
+
+#battery.warning {
+  color: @warning;
+  border-color: alpha(@warning, 0.6);
+}
+
+#battery.critical {
+  color: @error;
+  border-color: alpha(@error, 0.6);
+  background-color: alpha(@error, 0.15);
+  animation-name: pulse-attention;
+  animation-duration: 1.5s;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+/* ---------- power ---------- */
+
 #custom-power {
-  color: #ffb4ab;
+  color: @error;
   font-size: 15px;
 }
 #custom-power:hover {
-  background-color: alpha(#ffb4ab, 0.18);
+  background-color: alpha(@error, 0.18);
+  border-color: alpha(@error, 0.5);
 }
