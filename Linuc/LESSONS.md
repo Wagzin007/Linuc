@@ -168,13 +168,15 @@ saída de verdade (nunca confiar só na leitura do código):
 ## 13. Fatos confirmados sobre a API atual (waybar 0.15 / Hyprland 0.55+ / matugen) — não repesquisar
 
 - **Roles de cor que o matugen expõe** (confirmado no wiki oficial
-  `InioX/matugen`, e batendo com o que já é usado em
-  `hypr-colors.lua`/`kitty-colors.conf`/`dunstrc`): todo par
-  `<role>`/`on_<role>` de primary, secondary, tertiary, error, mais
-  surface/surface_variant/on_surface/on_surface_variant, outline,
-  outline_variant, shadow, scrim, background/on_background, e as
-  variantes `*_container`. Filtro de cor pra CSS é sempre `.hex`
-  (`{{colors.on_secondary.hex}}` etc.) — mesmo padrão já usado no projeto.
+  `InioX/matugen`): todo par `<role>`/`on_<role>` de primary, secondary,
+  tertiary, error, mais surface/surface_variant/on_surface/
+  on_surface_variant, outline, outline_variant, shadow, scrim,
+  background/on_background, e as variantes `*_container`.
+  **CORREÇÃO (ver item 14)**: o path completo até `.hex` é
+  `colors.<role>.default.hex` (ou `.light.hex`/`.dark.hex`) — **não**
+  `colors.<role>.hex` direto. O texto antigo desta lição estava errado
+  e foi o que gerou o bug do item 14; todos os templates do projeto já
+  foram corrigidos pra usar `.default.hex`/`.default.hex_stripped`.
 - **Hyprland 0.55+ trocou dispatch por API Lua**: `hyprctl dispatch` com
   sintaxe antiga (`workspace e+1`) não é mais o padrão documentado; a
   wiki oficial (Status bars) mostra
@@ -192,3 +194,60 @@ saída de verdade (nunca confiar só na leitura do código):
 - **`group/<nome>` com `drawer`** é a forma nativa de "revelar no hover":
   o primeiro módulo em `"modules"` fica sempre visível (leader), o resto
   aparece com `children-class` estilizável. Zero dependência nova.
+
+## 14. matugen 4.x: `colors.<role>.hex` sem `.default` quebra TODOS os
+templates, silenciosamente derrubando a troca de wallpaper no hyprpaper
+
+- **Causa raiz real** (reproduzida com o binário oficial `matugen 4.1.0`
+  baixado direto do release do GitHub, não só suposição): desde a
+  reescrita do template engine (matugen ~4.0), o path de uma cor deixou
+  de ser `colors.<role>.hex` e passou a ser
+  **`colors.<role>.default.hex`** (ou `.light.hex`/`.dark.hex` se você
+  quiser o valor de um mode específico independente do `--mode` passado
+  na CLI). Isso vale pro filtro `.hex_stripped` também
+  (`colors.<role>.default.hex_stripped`).
+- **TODOS os templates deste projeto** (`hypr-colors.lua`,
+  `kitty-colors.conf`, `waybar-colors.css`, `gtk.css`, `dunstrc`,
+  `hyprlock.conf`, `sddm-theme.conf.user`) usavam a sintaxe antiga sem
+  `.default` e por isso **todos** davam `ResolveError` — não só o sddm
+  (o sddm só era o único visível no terminal por estar por último na
+  ordem do `config.toml`; testado isoladamente, hyprland/kitty/waybar/etc
+  falhavam igual).
+- **matugen, ao dar erro em QUALQUER template, não escreve NENHUM
+  arquivo de saída** (confirmado rodando com `--dry-run` desligado e
+  inspecionando os arquivos de output: ficaram vazios/inexistentes) e
+  sai com exit code 1.
+- **Isso é o motivo real de o wallpaper nunca aplicar no desktop**: o
+  `matugen-wallpaper.sh` tem `set -euo pipefail`; quando `matugen image
+  ...` retorna erro, o script morre naquela linha e **nunca chega** nas
+  linhas de `hyprctl hyprpaper preload/wallpaper` logo depois. O
+  hyprlock continuava mostrando o wallpaper novo só porque o `cp`/`ln
+  -sfn` do `current.jpg` roda ANTES do matugen no script, e o hyprlock
+  lê esse arquivo do zero a cada trava — dando a falsa impressão de que
+  "só o desktop" estava com bug.
+- **Fix**: todo `{{colors.X.hex}}`/`{{colors.X.hex_stripped}}` nos
+  templates virou `{{colors.X.default.hex}}`/
+  `{{colors.X.default.hex_stripped}}`. Validado gerando os 8 arquivos de
+  verdade com o matugen 4.1.0 real — exit code 0, cores coerentes nos
+  arquivos gerados.
+- **Bug secundário, também real, que mascarava esse**: versões recentes
+  do matugen (4.x) abrem um prompt interativo de seleção de cor-fonte
+  ("Select the color you want to use as source color...") dentro de
+  `matugen image`, que também trava/quebra chamadas não-interativas.
+  Fix: `--source-color-index 0` (documentado no próprio `--help` da
+  versão 4.1.0: "Setting this to any value will not show the selection
+  prompt").
+- **Fix complementar em `matugen-wallpaper.sh`** (defesa em profundidade,
+  não a causa raiz mas evita repetir esse tipo de falha silenciosa no
+  futuro): parou de confiar cegamente no `|| true` dos comandos de IPC
+  do hyprpaper — agora tenta preload/wallpaper em todos os monitores
+  (via `jq` + `hyprctl monitors -j`), **confirma** com `hyprctl hyprpaper
+  listactive` se a textura nova ficou ativa e, se não, mata e reinicia o
+  `hyprpaper` (que volta a ler o `hyprpaper.conf` padrão, cujo `preload`
+  aponta pro symlink `current.jpg` — sobe já com a imagem certa).
+- **Regra geral pra não cair nisso de novo**: quando o matugen imprimir
+  `ResolveError` em QUALQUER template, sempre assumir que TODOS os
+  templates da execução falharam (nenhum arquivo foi escrito), não só o
+  que apareceu por último no log — e testar a sintaxe de cor isolada com
+  `matugen --config <toml-mínimo-de-1-template> image <img> ...` antes
+  de mexer em mais nada.
