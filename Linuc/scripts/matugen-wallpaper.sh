@@ -24,11 +24,16 @@ fi
 cp "$WALL" "$NEW_REAL"
 ln -sfn "$NEW_REAL" "$LINK"
 
-# --source-color-index 0 evita o prompt interativo que versões recentes do
-# matugen abrem pra escolher a cor-base ("Select the color you want to use
-# as source color..."). Sem essa flag, o comando fica esperando input e o
-# resto do script (incluindo a troca do wallpaper no hyprpaper) nunca roda.
-matugen image "$NEW_REAL" --mode dark --type scheme-tonal-spot --source-color-index 0
+# Se rodando num terminal de verdade (ex.: SUPER+W abre um kitty
+# interativo), deixa o matugen mostrar o prompt de escolha da cor
+# predominante -- é um recurso útil, não um bug. Só força a cor mais
+# dominante (index 0) automaticamente quando NÃO há terminal interativo
+# (chamada automatizada/headless), pra não travar nesse caso.
+if [ -t 0 ] && [ -t 1 ]; then
+  matugen image "$NEW_REAL" --mode dark --type scheme-tonal-spot
+else
+  matugen image "$NEW_REAL" --mode dark --type scheme-tonal-spot --source-color-index 0
+fi
 
 # --- Aplica o wallpaper no hyprpaper ao vivo -------------------------------
 # Estratégia: tenta trocar via IPC (rápido, sem flicker). Verifica se pegou
@@ -39,7 +44,7 @@ matugen image "$NEW_REAL" --mode dark --type scheme-tonal-spot --source-color-in
 wallpaper_applied=false
 
 if command -v hyprctl >/dev/null 2>&1 && pgrep -x hyprpaper >/dev/null 2>&1; then
-  hyprctl hyprpaper preload "$NEW_REAL" 2>/tmp/hyprpaper-preload.err \
+  hyprctl hyprpaper preload "$NEW_REAL" >/tmp/hyprpaper-preload.err 2>&1 \
     || echo "[matugen-wallpaper] aviso: preload falhou -> $(cat /tmp/hyprpaper-preload.err 2>/dev/null)" >&2
 
   # Tenta o alvo "todos os monitores" (sintaxe padrão) e também cada monitor

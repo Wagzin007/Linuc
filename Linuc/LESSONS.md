@@ -236,7 +236,11 @@ templates, silenciosamente derrubando a troca de wallpaper no hyprpaper
   `matugen image`, que também trava/quebra chamadas não-interativas.
   Fix: `--source-color-index 0` (documentado no próprio `--help` da
   versão 4.1.0: "Setting this to any value will not show the selection
-  prompt").
+  prompt"). **Ajuste fino**: esse prompt é útil quando chamado de um
+  terminal de verdade (ex. `SUPER+W` abre kitty interativo) — então
+  `matugen-wallpaper.sh` só força `--source-color-index 0` quando
+  `[ -t 0 ] && [ -t 1 ]` for falso (chamada headless/automatizada); com
+  terminal interativo, deixa o prompt normal aparecer.
 - **Fix complementar em `matugen-wallpaper.sh`** (defesa em profundidade,
   não a causa raiz mas evita repetir esse tipo de falha silenciosa no
   futuro): parou de confiar cegamente no `|| true` dos comandos de IPC
