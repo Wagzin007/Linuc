@@ -117,7 +117,6 @@ VIRT_SAFE="$(printf '%s' "$VIRT" | tr '\n\t' '  ' | tr -s ' ')"
     echo 'hl.env("WLR_NO_HARDWARE_CURSORS", "1")'
   elif [ "$AMD_LEGACY" = true ]; then
     echo 'hl.env("WLR_RENDERER_ALLOW_SOFTWARE", "1")'
-    echo 'hl.env("LIBGL_ALWAYS_SOFTWARE", "1")'
     echo 'hl.env("WLR_NO_HARDWARE_CURSORS", "1")'
   elif echo "$GPU_INFO" | grep -qi nvidia; then
     echo 'hl.env("WLR_NO_HARDWARE_CURSORS", "1")'
