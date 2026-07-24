@@ -240,15 +240,10 @@ else
   warn ".p10k.zsh não encontrado, o prompt vai usar o tema padrão do powerlevel10k."
 fi
 
-# wallpaper padrão
+# pasta de wallpapers do usuário — sem wallpaper padrão embutido no repo
 mkdir -p "$CONFIG_DIR/hypr/wallpapers"
 mkdir -p "$HOME/Imagens/Wallpapers"
-if [ -f "$DOTS_DIR/wallpapers/default.jpg" ]; then
-  cp "$DOTS_DIR/wallpapers/default.jpg" "$CONFIG_DIR/hypr/wallpapers/current.jpg"
-  cp "$DOTS_DIR/wallpapers/default.jpg" "$HOME/Imagens/Wallpapers/default.jpg"
-else
-  warn "Wallpaper padrão não encontrado; coloque imagens em ~/Imagens/Wallpapers e use SUPER+W."
-fi
+log "Coloque seus wallpapers em ~/Imagens/Wallpapers e use SUPER+W pra escolher."
 
 if [ -d "$DOTS_DIR/scripts" ]; then
   chmod +x "$DOTS_DIR/scripts/"*.sh 2>/dev/null || true
@@ -297,11 +292,7 @@ log "Configurando gamemode..."
 [ -f "$DOTS_DIR/scripts/setup-gamemode.sh" ] && bash "$DOTS_DIR/scripts/setup-gamemode.sh" || warn "setup-gamemode.sh não encontrado, pulando."
 
 # --- 10. Gerar paleta Material You inicial ---
-if [ -f "$CONFIG_DIR/hypr/wallpapers/current.jpg" ] && [ -f "$DOTS_DIR/scripts/matugen-wallpaper.sh" ]; then
-  log "Gerando paleta Material You a partir do wallpaper padrão..."
-  bash "$DOTS_DIR/scripts/matugen-wallpaper.sh" "$CONFIG_DIR/hypr/wallpapers/current.jpg" || \
-    warn "matugen falhou, rode manualmente depois com um wallpaper."
-fi
+log "Escolha um wallpaper com SUPER+W depois de logar pra gerar a paleta Material You."
 
 # --- 11. SDDM (Material You também no login) ---
 log "Habilitando SDDM..."
